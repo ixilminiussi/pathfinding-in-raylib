@@ -47,16 +47,30 @@ Boid::~Boid() {
 void Boid::render() {
 	Rectangle src = Rectangle{ 0, 0, (float)texture->width, (float)texture->height };
     Vector2 size = Vector2 { 10.0f * scale, 10.0f * scale };
+    Color color;
     switch (team) {
     case Team::Red:
-        DrawTexturePro(*texture, src, Rectangle{ position.x - size.x / 2.0f, position.y - size.y / 2.0f, size.x, size.y }, Vector2{ size.x / 2.0f, size.y / 2.0f }, Vector2Angle({ -1.0f, 0.0f }, direction) * -180.0f / M_PI, Color{ 255, (unsigned char)(155 * direction.x), (unsigned char)(155 * direction.y), 255 });
+        color = Color{ 255, (unsigned char)(155 * direction.x), (unsigned char)(155 * direction.y), 255 };
         break;
     case Team::Blue:
-        DrawTexturePro(*texture, src, Rectangle{ position.x - size.x / 2.0f, position.y - size.y / 2.0f, size.x, size.y }, Vector2{ size.x / 2.0f, size.y / 2.0f }, Vector2Angle({ -1.0f, 0.0f }, direction) * -180.0f / M_PI, Color{ (unsigned char)(155 * direction.x), (unsigned char)(155 * direction.y), 255, 255 });
+        color = Color{ (unsigned char)(155 * direction.x), (unsigned char)(155 * direction.y), 255, 255 };
         break;
     case Team::Green:
-        DrawTexturePro(*texture, src, Rectangle{ position.x - size.x / 2.0f, position.y - size.y / 2.0f, size.x, size.y }, Vector2{ size.x / 2.0f, size.y / 2.0f }, Vector2Angle({ -1.0f, 0.0f }, direction) * -180.0f / M_PI, Color{ (unsigned char)(155 * direction.x), 255, (unsigned char)(155 * direction.y), 255 });
+        color = Color{ (unsigned char)(155 * direction.x), 255, (unsigned char)(155 * direction.y), 255 };
         break;
+    }
+	DrawTexturePro(*texture, src, Rectangle{ position.x, position.y, size.x, size.y }, Vector2{ size.x / 2.0f, size.y / 2.0f }, Vector2Angle({ -1.0f, 0.0f }, direction) * -180.0f / M_PI, color);
+
+    if (debug) {
+        DrawCircleLines((int)position.x, (int)position.y, 30.0f * scale, color);
+        for (Cell* c : parent->getNeighbours()) {
+            if (c == parent) {
+                c->render(WHITE);
+            }
+            else {
+                c->render(RED);
+            }
+        }
     }
 }
 
@@ -140,7 +154,7 @@ bool Boid::isColliding() {
 }
 
 void Boid::update(float dt) {
-    scale = Lerp(scale, 1.0f, 0.003f);
+    scale = Lerp(scale, 1.0f, 0.002f);
 
     Vector2 alignmentForce{ 0.0f, 0.0f };
     Vector2 separationForce{ 0.0f, 0.0f };
@@ -149,15 +163,21 @@ void Boid::update(float dt) {
     Vector2 preyForce{ 0.0f, 0.0f };
 
     // calculating neighbours
+    /* Alignment, Cohesion, Prey/predator checks are wide and need to look further than their own cell, 
+    * however after 8 checks we have enough information to move on to separation/eating checks in our current cell only */
+    int alCoPr = 0;
     if (parent != nullptr) {
         for (Cell* c : parent->getNeighbours()) {
+            if (alCoPr >= 8 && c != parent) { continue; }
             for (Boid* b : c->getChildren()) {
+				if (alCoPr >= 8 && c != parent) { break; }
                 if (Vector2DotProduct(Vector2Normalize(Vector2Subtract(b->getPosition(), position)), direction) <= cone) {
                     if (b->getTeam() == team) {
                         if (Vector2Distance(b->getPosition(), position) <= separationRange * scale) {
                             addSeparation(separationForce, b->getPosition());
                         }
                         if (Vector2Distance(b->getPosition(), position) <= alignmentRange * scale) {
+                            alCoPr++;
                             addAlignment(alignmentForce, b);
                         }
                         if (Vector2Distance(b->getPosition(), position) <= cohesionRange * scale) {
@@ -167,6 +187,7 @@ void Boid::update(float dt) {
                     else {
                         if (b->getTeam() == predator) {
                             if (Vector2Distance(b->getPosition(), position) <= predatorRange * scale) {
+                                alCoPr++;
                                 addSeparation(predatorForce, b->getPosition());
                             }
                             // LOST (change teams) 
@@ -178,6 +199,7 @@ void Boid::update(float dt) {
                         }
                         if (b->getTeam() == prey) {
                             if (Vector2Distance(b->getPosition(), position) <= preyRange * scale) {
+                                alCoPr++;
                                 addCohesion(preyForce, b->getPosition());
                             }
                         }
@@ -287,6 +309,14 @@ const Team& Boid::getTeam() {
 
 Cell* Boid::getParent() {
     return parent;
+}
+
+void Boid::track() {
+    debug = true;
+}
+
+void Boid::untrack() {
+    debug = false;
 }
 
 void Boid::setParent(Cell* parentP) {

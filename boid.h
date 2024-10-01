@@ -3,6 +3,8 @@
 #include <vector>
 #include "raylib.h"
 
+static bool DEBUGGING = false;
+
 // used for boundingBox optimisation
 class Cell;
 
@@ -43,6 +45,8 @@ public:
     void setDirection(const Vector2& direction);
     void setScale(const float& scale);
     void setParent(Cell* parent);
+    void track(); // debugging
+    void untrack();
 
     /* Change team and adopt team's properties */
     void setTeam(Team team);
@@ -52,6 +56,7 @@ private:
     Vector2 position;
 
     Team team;
+    bool debug = false;
 
     Cell* parent = nullptr;
 

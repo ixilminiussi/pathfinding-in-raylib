@@ -28,8 +28,8 @@ void Cell::findNeighbours() {
 	}
 }
 
-void Cell::render() {
-	DrawRectangleLinesEx(rectangle, 1.0f, WHITE);
+void Cell::render(const Color& color) {
+	DrawRectangleLinesEx(rectangle, 1.0f, color);
 }
 
 void Cell::isInOrOut(Boid *boid) {

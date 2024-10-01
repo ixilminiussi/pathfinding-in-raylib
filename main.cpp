@@ -6,7 +6,7 @@
 #include "math.h"
 #include "obstacle.h"
 
-#define BOID_COUNT 2000.0f
+#define BOID_COUNT 100.0f
 
 using namespace std;
 
@@ -36,14 +36,16 @@ int main() {
     Image sprite = LoadImage("WhiteFish.png");
 	Texture2D texture = LoadTextureFromImage(sprite);
 
+    // Generate Bounding Box grid over world
     float stepX = (float)(GetScreenWidth()) / 10.0f;
-    float stepY = (float)(GetScreenHeight()) / 5.0f;
+    float stepY = (float)(GetScreenHeight()) / 6.0f;
     for (int x = 0; x < 10; x ++) {
         for (int y = 0; y < 10; y ++) {
             new Cell(Rectangle{ x * stepX, y * stepY, stepX, stepY }, x, y);
         }
     }
 
+    // Initialize every cell to find their neighbour
     for (Cell *c : Cell::cells) {
         c->findNeighbours();
     }
@@ -64,7 +66,7 @@ int main() {
 				spawnNew(Team::Blue, &texture);
             }
         }
-    } 
+    }
 
     while (!WindowShouldClose()) {
         BeginDrawing();
@@ -73,6 +75,11 @@ int main() {
         float dt = GetFrameTime();
 
         // update and renders boids + obstacles
+        if (DEBUGGING) {
+			for (Cell* c : Cell::cells) {
+                c->render({ 255, 255, 255, 100 });
+			}
+        }
         for (Boid *b : Boid::boids) {
             b -> update(dt);
             b -> render();
@@ -106,6 +113,18 @@ int main() {
                 if (o->overlaps(GetMousePosition(), 1.0f)) {
                     o->kill();
                 }
+            }
+        }
+
+        // Keyboard interactions
+        if (IsKeyPressed(KEY_D)) {
+            if (DEBUGGING) {
+                DEBUGGING = false;
+				Boid::boids.front()->untrack();
+            }
+            else {
+                DEBUGGING = true;
+				Boid::boids.front()->track();
             }
         }
 
