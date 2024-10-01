@@ -16,7 +16,7 @@ Obstacles prevent boids from reaching a given area. The user can easily:
 ### Add a new obstacle using left click
 ### Delete an existing one using right click
 
-## Optimsations
+## Optimisations
 ### Toggle debug mode using *D*
 By using a bounding box, boids only need look at their neighbouring boids by fetching the neighbouring boxes and their children.
 As they move around, boids regularly ping the neighbouring cells to check if they have switched position.
