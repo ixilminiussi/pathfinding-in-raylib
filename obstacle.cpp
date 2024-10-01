@@ -2,13 +2,24 @@
 
 std::vector<Obstacle*> Obstacle::obstacles = std::vector<Obstacle*>();
 
-Obstacle::Obstacle(const Rectangle& rectangleP) : rectangle(rectangleP) {
+Obstacle::Obstacle(const Rectangle& rectangleP, bool cantDieP) : rectangle(rectangleP), cantDie(cantDieP) {
 	obstacles.push_back(this);
 }
 
+
+Obstacle::~Obstacle() {
+    obstacles.erase(std::remove(obstacles.begin(), obstacles.end(), this), obstacles.end());
+}
+
 void Obstacle::render() {
-	DrawRectangleRoundedLines(rectangle, 0.1f, 5, 1.0f, WHITE);
-	DrawRectangleRounded(rectangle, 0.1f, 5, BLACK);
+	DrawRectangleRec(rectangle, BLACK);
+	DrawRectangleLinesEx(rectangle, 1.0f, WHITE);
+}
+
+void Obstacle::kill() {
+	if (!cantDie) {
+		delete this;
+	}
 }
 
 bool Obstacle::overlaps(const Vector2& point, const float& range) {

@@ -134,14 +134,17 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="boid.cpp" />
-    <ClCompile Include="grid.cpp" />
+    <ClCompile Include="cell.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="obstacle.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="grid.h" />
-    <ClInclude Include="include\boid.h" />
+    <ClInclude Include="boid.h" />
+    <ClInclude Include="cell.h" />
     <ClInclude Include="obstacle.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="WhiteFish.png" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
