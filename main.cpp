@@ -6,7 +6,7 @@
 #include "math.h"
 #include "obstacle.h"
 
-#define BOID_COUNT 100.0f
+#define BOID_COUNT 3000.0f
 
 using namespace std;
 
@@ -150,7 +150,7 @@ int main() {
         DrawText(std::to_string(greenScore).c_str(), (int)(GetRenderWidth() / 2 - 20), (int)(GetRenderHeight() / 2 - 10), 20, GREEN);
         DrawText(std::to_string(redScore).c_str(), (int)(GetRenderWidth() / 2 + 165), (int)(GetRenderHeight() / 2 - 10), 20, RED);
 
-        DrawText(std::to_string(GetFPS()).c_str(), 10, 10, 22, WHITE);
+        if (DEBUGGING) DrawText(std::to_string(GetFPS()).c_str(), 10, 10, 22, WHITE);
         EndDrawing();
     }
 
