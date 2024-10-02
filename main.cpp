@@ -6,7 +6,7 @@
 #include "math.h"
 #include "obstacle.h"
 
-#define BOID_COUNT 3000.0f
+#define BOID_COUNT 2000.0f
 
 using namespace std;
 
@@ -75,8 +75,9 @@ int main() {
         float dt = GetFrameTime();
 
         // update and renders boids + obstacles
-        if (DEBUGGING) {
-			for (Cell* c : Cell::cells) {
+		for (Cell* c : Cell::cells) {
+            c->update();
+			if (DEBUGGING) {
                 c->render({ 255, 255, 255, 100 });
 			}
         }

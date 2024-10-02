@@ -11,14 +11,14 @@
 std::vector<Boid*> Boid::boids = std::vector<Boid*>();
 
 float Boid::alignmentRange = 60.0f;
-float Boid::alignmentStrength = 6.0f;
+float Boid::alignmentStrength = 7.0f;
 float Boid::separationRange = 20.0f;
 float Boid::separationStrength = 10.0f;
 float Boid::cohesionRange = 100.0f;
-float Boid::cohesionStrength = 2.0f;
+float Boid::cohesionStrength = 5.0f;
 float Boid::wallAvoidanceRange = 50.0f;
 float Boid::wallAvoidanceStrength = 10.0f;
-float Boid::steerStrength = 0.5f;
+float Boid::steerStrength = 10.0f;
 float Boid::cone = 0.2f;
 float Boid::speed = 150.0f;
 float Boid::eatingRange = 3.0f;
@@ -126,7 +126,7 @@ void Boid::addAlignment(Vector2& force, Boid* b) {
 void Boid::checkAndAdd(Vector2& main, const Vector2& add, const float& strength) {
     // useless for some, but makes sure that an empty force vector (one that wasn't affected at all) doesn't normalize to an inacurrate direction
     if (add.x != 0.0f || add.y != 0.0f) {
-		main = Vector2Add(main, Vector2Scale(Vector2Normalize(add), strength));
+        main = Vector2Add(main, Vector2Scale(Vector2Normalize(add), strength));
     }
 }
 
@@ -154,7 +154,7 @@ bool Boid::isColliding() {
 }
 
 void Boid::update(float dt) {
-    scale = Lerp(scale, 1.0f, 0.002f);
+    scale = Lerp(scale, 1.0f, 0.2f * dt);
 
     Vector2 alignmentForce{ 0.0f, 0.0f };
     Vector2 separationForce{ 0.0f, 0.0f };
@@ -168,9 +168,10 @@ void Boid::update(float dt) {
     int alCoPr = 0;
     if (parent != nullptr) {
         for (Cell* c : parent->getNeighbours()) {
-            if (alCoPr >= 8 && c != parent) { continue; }
             for (Boid* b : c->getChildren()) {
-				if (alCoPr >= 8 && c != parent) { break; }
+				if (alCoPr >= 8) {
+                    if (c != parent) { break; }
+                }
                 if (Vector2DotProduct(Vector2Normalize(Vector2Subtract(b->getPosition(), position)), direction) <= cone) {
                     if (b->getTeam() == team) {
                         if (Vector2Distance(b->getPosition(), position) <= separationRange * scale) {
@@ -184,25 +185,24 @@ void Boid::update(float dt) {
                             addCohesion(cohesionForce, b->getPosition());
                         }
                     }
-                    else {
-                        if (b->getTeam() == predator) {
-                            if (Vector2Distance(b->getPosition(), position) <= predatorRange * scale) {
-                                alCoPr++;
-                                addSeparation(predatorForce, b->getPosition());
-                            }
-                            // LOST (change teams) 
-                            if (Vector2Distance(b->getPosition(), position) <= eatingRange * b->getScale()) {
-                                if (scale > 0.7f) scale -= 0.1f;
-                                if (b->getScale() < 2.5f) b->setScale(b->getScale() + 0.1f);
-                                setTeam(predator);
-                            }
+                    if (b->getTeam() == predator) {
+                        if (Vector2Distance(b->getPosition(), position) <= predatorRange * scale) {
+                            alCoPr++;
+                            addSeparation(predatorForce, b->getPosition());
                         }
-                        if (b->getTeam() == prey) {
-                            if (Vector2Distance(b->getPosition(), position) <= preyRange * scale) {
-                                alCoPr++;
-                                addCohesion(preyForce, b->getPosition());
-                            }
+                    }
+                    if (b->getTeam() == prey) {
+                        if (Vector2Distance(b->getPosition(), position) <= preyRange * scale) {
+                            alCoPr++;
+                            addCohesion(preyForce, b->getPosition());
                         }
+                        // WIN (change teams) 
+                        if (Vector2Distance(b->getPosition(), position) <= eatingRange * (b->getScale() + scale)) {
+                            if (scale < 2.5f) scale += 0.1f;
+                            if (b->getScale() > 0.7f) b->setScale(b->getScale() - 0.1f);
+                            b->setTeam(predator);
+                        }
+
                     }
                 }
             }
@@ -245,7 +245,7 @@ void Boid::update(float dt) {
     float smoothScale = (float)(log(scale) + 1.0f);
 
     force = Vector2Normalize(force);
-    direction = Vector2Add(direction, Vector2Scale(force, steerStrength / smoothScale));
+    direction = Vector2Lerp(direction, force, steerStrength / smoothScale * dt);
     direction = Vector2Normalize(direction);
 
     position = Vector2Add(position, Vector2Scale(direction, speed * smoothScale * dt));
@@ -261,7 +261,7 @@ void Boid::update(float dt) {
         position = Vector2Subtract(position, direction);
     }
     if (isColliding()) {
-        position = { (float)GetRandomValue(0, GetScreenWidth()), (float)GetRandomValue(0, GetScreenHeight()) };
+       setPosition({ (float)GetRandomValue(0, GetScreenWidth()), (float)GetRandomValue(0, GetScreenHeight()) });
     }
     if (hasHitWall) {
         direction = Vector2({ -direction.x, -direction.y });
@@ -285,6 +285,7 @@ const Vector2& Boid::getPosition() {
 
 void Boid::setPosition(const Vector2& positionP) {
     position = positionP;
+    parent = nullptr;
 }
 
 const Vector2& Boid::getDirection() {

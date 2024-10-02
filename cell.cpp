@@ -1,5 +1,7 @@
 #include "cell.h"
 #include "boid.h"
+#include <random>
+#include <algorithm>
 
 std::vector<Cell*> Cell::cells = std::vector<Cell*>();
 
@@ -15,6 +17,8 @@ Cell::~Cell() {
     cells.erase(std::remove(cells.begin(), cells.end(), this), cells.end());
 }
 
+auto rng = std::default_random_engine{};
+
 void Cell::findNeighbours() {
 	neighbours = std::vector<Cell*>();
 	for (Cell *c : cells) {
@@ -22,10 +26,17 @@ void Cell::findNeighbours() {
 		relX = x - c->getX();
 		relY = y - c->getY();
 		if ((relX == 1 || relX == 0 || relX == -1) &&
-			(relY == 1 || relY == 0 || relY == -1)) {
+			(relY == 1 || relY == 0 || relY == -1) &&
+			!(relX == 0 && relY == 0)) {
 			neighbours.push_back(c);
 		}
 	}
+	std::shuffle(std::begin(neighbours), std::end(neighbours), rng);
+	neighbours.push_back(this);
+}
+
+void Cell::update() {
+	std::rotate(neighbours.begin(), neighbours.begin() + 1, neighbours.end() - 1);
 }
 
 void Cell::render(const Color& color) {

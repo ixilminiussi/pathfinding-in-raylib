@@ -22,6 +22,8 @@ public:
 	/* Renders cell, for debugging purposes only */
 	void render(const Color& color);
 
+	void update();
+
 	/* Finds neighbouring cells (including self) and adds to neighbour list */
 	void findNeighbours();
 
