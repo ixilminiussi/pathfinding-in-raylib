@@ -1,157 +1,75 @@
 #include "raylib.h"
-#include "boid.h"
-#include <iostream>
-#include <string>
-#include "cell.h"
-#include "math.h"
-#include "obstacle.h"
-
-#define BOID_COUNT 2000.0f
-
-using namespace std;
-
-void spawnNew(Team team, Texture *texture) {
-	Boid* b;
-	float x, y;
-	x = (float)GetRandomValue(2, (int)GetRenderWidth());
-	y = (float)GetRandomValue(2, (int)GetRenderHeight());
-	b = new Boid(Vector2{ x, y }, team, texture);
-	while (b->isColliding()) {
-		x = (float)GetRandomValue(2, (int)GetRenderWidth());
-		y = (float)GetRandomValue(2, (int)GetRenderHeight());
-		b->setPosition({ x, y });
-	}
-
-    for (Cell *c : Cell::cells) {
-        c->isInOrOut(b);
-    }
-}
-
-Vector2 mouseStart;
+#include "land.h"
+#include "soldier.h"
+#include "city.h"
+#include "mouse.h"
+#include "namespaces.h"
 
 int main() {
-    InitWindow(GetScreenWidth(), GetScreenHeight(), "Boids!");
-    SetWindowState(FLAG_FULLSCREEN_MODE);
+    {
+		using namespace screen; 
 
-    Image sprite = LoadImage("WhiteFish.png");
-	Texture2D texture = LoadTextureFromImage(sprite);
+        WIDTH = 800;
+        HEIGHT = 500;
+        FULL_SCREEN = false;
 
-    // Generate Bounding Box grid over world
-    float stepX = (float)(GetScreenWidth()) / 10.0f;
-    float stepY = (float)(GetScreenHeight()) / 6.0f;
-    for (int x = 0; x < 10; x ++) {
-        for (int y = 0; y < 10; y ++) {
-            new Cell(Rectangle{ x * stepX, y * stepY, stepX, stepY }, x, y);
-        }
+        InitWindow(WIDTH, HEIGHT, "Boids!");
+        if (FULL_SCREEN) SetWindowState(FLAG_FULLSCREEN_MODE);
     }
 
-    // Initialize every cell to find their neighbour
-    for (Cell *c : Cell::cells) {
-        c->findNeighbours();
+    {
+        using namespace game;
+
+        SOLDIER_COUNT = 20;
     }
 
-    new Obstacle(Rectangle{ GetRenderWidth() / 2.0f - 250.0f, GetRenderHeight() / 2.0f - 50.0f, 500.0f, 100.0f }, true);
-    new Obstacle(Rectangle{ GetRenderWidth() / 2.0f - 100.0f, 0.0f, 200.0f, 100.0f });
-    new Obstacle(Rectangle{ GetRenderWidth() / 2.0f - 100.0f, GetRenderHeight() - 100.0f, 200.0f, 100.0f });
+    /* using namespace Type;
+    int *worldGrid = new int[10 * 7]
+    {
+		P, P, P, P, P, P, P, P, P, P,
+		P, R, R, R, R, R, R, R, R, P,
+		P, P, P, R, P, R, P, P, R, P,
+		P, R, R, R, R, R, P, R, R, P,
+		P, R, P, P, P, R, P, P, R, P,
+		P, R, R, R, R, R, R, R, R, P,
+		P, P, P, P, P, P, P, P, P, P
+    }; */
 
-    for (int i = 0; i < BOID_COUNT; i++) {
-        if (i < BOID_COUNT / 3) {
-            spawnNew(Team::Red, &texture);
-        }
-        else {
-            if (i < BOID_COUNT / 3 * 2) {
-                spawnNew(Team::Green, &texture);
-            }
-            else {
-				spawnNew(Team::Blue, &texture);
-            }
-        }
+    for (int i = 0; i < game::SOLDIER_COUNT; i++) {
+        new Soldier({ (float)GetRandomValue(0, screen::WIDTH), (float)GetRandomValue(0, screen::HEIGHT) });
     }
+
+    // City city = City(worldGrid, 7, 10);
+
+    Mouse* mouse = Mouse::getInstance();
 
     while (!WindowShouldClose()) {
         BeginDrawing();
-        ClearBackground(BLACK);
+        ClearBackground(shoshone::maroon);
+        game::DELTA = GetFrameTime();
 
-        float dt = GetFrameTime();
+		if (IsMouseButtonReleased(MOUSE_LEFT_BUTTON)) {
+            mouse->update(game::DELTA);
+		}
 
-        // update and renders boids + obstacles
-		for (Cell* c : Cell::cells) {
-            c->update();
-			if (DEBUGGING) {
-                c->render({ 255, 255, 255, 100 });
-			}
-        }
-        for (Boid *b : Boid::boids) {
-            b -> update(dt);
-            b -> render();
-        }
-        for (Obstacle *o : Obstacle::obstacles) {
-            o->render();
-        }
+        // city.render();
+        for (Soldier* s : Soldier::army) {
+            s->update(game::DELTA);
+            s->render();
 
-        // Mouse interactions
-        // Start creating
-        if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) { mouseStart = GetMousePosition(); }
-
-        // Overlay 
-        if (IsMouseButtonDown(MOUSE_BUTTON_LEFT)) {
-            Vector2 start = { std::min((int)mouseStart.x, GetMouseX()), std::min((int)mouseStart.y, GetMouseY())};
-            Vector2 size = { std::abs((float)GetMouseX() - mouseStart.x), std::abs((float)GetMouseY() - mouseStart.y) };
-            Rectangle current = { start.x, start.y, size.x, size.y };
-            DrawRectangleLinesEx(current, 2.0f, WHITE);
-        }
-
-        // Create obstacle
-        if (IsMouseButtonReleased(MOUSE_BUTTON_LEFT)) {
-            Vector2 start = { std::min((int)mouseStart.x, GetMouseX()), std::min((int)mouseStart.y, GetMouseY())};
-            Vector2 size = { std::abs((float)GetMouseX() - mouseStart.x), std::abs((float)GetMouseY() - mouseStart.y) };
-            new Obstacle(Rectangle{ start.x, start.y, size.x, size.y });
-        }
-
-        // Delete osbtacle
-        if (IsMouseButtonPressed(MOUSE_BUTTON_RIGHT)) {
-            for (Obstacle* o : Obstacle::obstacles) {
-                if (o->overlaps(GetMousePosition(), 1.0f)) {
-                    o->kill();
+            if (IsMouseButtonReleased(MOUSE_BUTTON_LEFT)) {
+                if (CheckCollisionPointRec(s->getPosition(), mouse->getSelectionArea())) {
+                    s->select();
                 }
             }
         }
 
-        // Keyboard interactions
-        if (IsKeyPressed(KEY_D)) {
-            if (DEBUGGING) {
-                DEBUGGING = false;
-				Boid::boids.front()->untrack();
-            }
-            else {
-                DEBUGGING = true;
-				Boid::boids.front()->track();
-            }
+        if (!IsMouseButtonReleased(MOUSE_LEFT_BUTTON)) {
+			mouse->update(game::DELTA);
         }
 
-        int blueScore = 0;
-        int redScore = 0;
-        int greenScore = 0;
+        // Mouse selections
 
-        for (Boid *b : Boid::boids) {
-            switch (b->getTeam()) {
-            case Red:
-                redScore++;
-                break;
-            case Blue:
-                blueScore++;
-                break;
-            case Green:
-                greenScore++;
-                break;
-            }
-        }
-
-        DrawText(std::to_string(blueScore).c_str(), (int)(GetRenderWidth() / 2 - 195), (int)(GetRenderHeight() / 2 - 10), 20, BLUE);
-        DrawText(std::to_string(greenScore).c_str(), (int)(GetRenderWidth() / 2 - 20), (int)(GetRenderHeight() / 2 - 10), 20, GREEN);
-        DrawText(std::to_string(redScore).c_str(), (int)(GetRenderWidth() / 2 + 165), (int)(GetRenderHeight() / 2 - 10), 20, RED);
-
-        if (DEBUGGING) DrawText(std::to_string(GetFPS()).c_str(), 10, 10, 22, WHITE);
         EndDrawing();
     }
 

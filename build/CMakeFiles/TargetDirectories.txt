@@ -1,0 +1,3 @@
+/home/ixilminiussi/Desktop/gamedev/pathfinding-in-raylib/build/CMakeFiles/game.dir
+/home/ixilminiussi/Desktop/gamedev/pathfinding-in-raylib/build/CMakeFiles/edit_cache.dir
+/home/ixilminiussi/Desktop/gamedev/pathfinding-in-raylib/build/CMakeFiles/rebuild_cache.dir

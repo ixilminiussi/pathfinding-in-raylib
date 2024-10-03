@@ -1,0 +1,1 @@
+/usr/bin/c++ CMakeFiles/game.dir/src/city.cpp.o CMakeFiles/game.dir/src/land.cpp.o CMakeFiles/game.dir/src/main.cpp.o CMakeFiles/game.dir/src/path.cpp.o CMakeFiles/game.dir/src/soldier.cpp.o -o game 
