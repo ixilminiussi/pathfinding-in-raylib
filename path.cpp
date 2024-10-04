@@ -1,6 +1,7 @@
 #include "path.h"
 #include "raylib.h"
 #include "raymath.h"
+#include "world.h"
 #include <iostream>
 #include <algorithm>
 #include <cmath>
@@ -12,7 +13,8 @@ Path::Path(const Vector2 &A, const Vector2 &B)
 {
     start = A;
     end = B;
-    straightSegmentAlgorithm(A, B);
+    if (World::getInstance() -> lineValidation(A, B))
+		straightSegmentAlgorithm(A, B);
 }
 
 Path* Path::newPath(const Vector2& A, const Vector2& B) {

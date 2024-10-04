@@ -14,9 +14,11 @@ public:
 
 	void render() const;
 	void paintArea(const Vector2& center, const float& radius, enum Type type);
-	Vector2 getWorldAddress(const Vector2& P);
+	Vector2 getWorldAddress(const Vector2& P) const;
 
-	Type getType(int x, int y);
+	bool lineValidation(const Vector2& A, const Vector2& B);
+
+	enum Type getType(int x, int y) const;
 	void setType(int x, int y, Type type);
 
 	const class Rectangle& getRectangle(int x, int y) const;

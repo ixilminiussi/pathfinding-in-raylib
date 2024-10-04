@@ -2,6 +2,9 @@
 #include "tile.h"
 #include "raylib.h"
 #include "namespaces.h"
+#include <utility>
+#include <algorithm>
+#include <vector>
 
 World* World::instance = nullptr;
 
@@ -57,11 +60,45 @@ void World::paintArea(const Vector2& center, const float& radius, Type type) {
 	}
 }
 
-Vector2 World::getWorldAddress(const Vector2& P) {
+Vector2 World::getWorldAddress(const Vector2& P) const {
 	return { P.x / game::TILE_SIZE, P.y / game::TILE_SIZE };
 }
 
-Type World::getType(int x, int y) {
+bool World::lineValidation(const Vector2& A, const Vector2& B) {
+	Vector2 Ap = getWorldAddress(A);
+	Vector2 Bp = getWorldAddress(B);
+	int x1 = Ap.x;
+	int x2 = Bp.x;
+	int y1 = Ap.y;
+	int y2 = Bp.y;
+	
+	// BRESENHAM algorithm to find all squares in the way
+	// find all at : https://en.wikipedia.org/wiki/Bresenham%27s_line_algorithm#:~:text=Bresenham's%20line%20algorithm%20is%20a%20line%20drawing%20algorithm
+	int dx = x2 - x1;
+	int dy = y2 - y1;
+	int yi = 1;
+	if (dy < 0) {
+		yi = -1;
+		dy = -dy;
+	}
+	int D = (2 * dy) - dx;
+	int y = y1;
+
+	for (int x = x1; x < x2; x++) {
+		setType(x, y, Type::WALL);
+		if (D > 0) {
+			y = y + yi;
+			D = D + (2 * (dy - dx));
+		}
+		else {
+			D += 2 * dy;
+		}
+	}
+
+	return true;
+}
+
+Type World::getType(int x, int y) const {
 	if (x < 0) return Type::WALL;
 	if (x >= game::WIDTH) return Type::WALL;
 	if (y < 0) return Type::WALL;
