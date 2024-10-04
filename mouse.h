@@ -1,6 +1,11 @@
 #pragma once
 #include "raylib.h"
 
+enum Mode {
+    Editing,
+    Moving
+};
+
 class Mouse
 {
 public:
@@ -16,11 +21,15 @@ public:
     void deselectAll() const;
     const Rectangle &getSelectionArea() const;
 
+    Mode mode;
+
 private:
     Mouse();
     static Mouse* instance;
     Color fill;
     Color outline;
+
+    float editingRadius;
 
     Vector2 mouseStart;
     Rectangle selectionArea;

@@ -10,7 +10,7 @@ class Soldier
     ~Soldier();
 
     void select();
-    void deSelect();
+    void deselect();
     void target(const Vector2 &target, const float& acceptableDistanceSqr);
 
     void update(float dt);
@@ -31,9 +31,13 @@ class Soldier
     float acceptableDistanceSqr;
 
     Path *path;
+    double lastTimeImmobile;
 
+    static float radius;
     static float separationRangeSqr;
     static float separationStrength;
+    static float obstacleRange;
+    static float obstacleStrength;
     static float towardsPathStrength;
     static float alongsidePathStrength;
     static float steeringDelta;

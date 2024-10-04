@@ -1,14 +1,17 @@
 #include "namespaces.h"
 
 namespace screen {
-    int WIDTH;
-    int HEIGHT;
-    bool FULL_SCREEN;
+    const int WIDTH = 1080;
+    const int HEIGHT = 720;
+    const bool FULL_SCREEN = false;
 }
 
 namespace game {
-    int SOLDIER_COUNT;
+    int SOLDIER_COUNT = 200;
+    const int TILE_SIZE = 5;
     float DELTA;
+    const int WIDTH = screen::WIDTH / TILE_SIZE;
+    const int HEIGHT = screen::HEIGHT / TILE_SIZE;
 }
 
 namespace shoshone {
