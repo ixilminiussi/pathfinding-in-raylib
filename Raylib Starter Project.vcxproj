@@ -136,21 +136,21 @@
     <Image Include="WhiteFish.png" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="main.cpp" />
-    <ClCompile Include="mouse.cpp" />
-    <ClCompile Include="namespaces.cpp" />
-    <ClCompile Include="path.cpp" />
-    <ClCompile Include="soldier.cpp" />
-    <ClCompile Include="tile.cpp" />
-    <ClCompile Include="world.cpp" />
+	<ClCompile Include="src/main.cpp" />
+	<ClCompile Include="src/mouse.cpp" />
+	<ClCompile Include="src/namespaces.cpp" />
+	<ClCompile Include="src/path.cpp" />
+	<ClCompile Include="src/soldier.cpp" />
+	<ClCompile Include="src/tile.cpp" />
+	<ClCompile Include="src/world.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="mouse.h" />
-    <ClInclude Include="path.h" />
-    <ClInclude Include="namespaces.h" />
-    <ClInclude Include="soldier.h" />
-    <ClInclude Include="tile.h" />
-    <ClInclude Include="world.h" />
+    <ClInclude Include="include/mouse.h" />
+    <ClInclude Include="include/path.h" />
+    <ClInclude Include="include/namespaces.h" />
+    <ClInclude Include="include/soldier.h" />
+    <ClInclude Include="include/tile.h" />
+    <ClInclude Include="include/world.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

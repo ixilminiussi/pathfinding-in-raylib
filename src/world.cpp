@@ -1,6 +1,5 @@
 #include "world.h"
 #include "namespaces.h"
-#include "raylib.h"
 #include "tile.h"
 #include <algorithm>
 #include <utility>
@@ -77,79 +76,123 @@ bool World::lineValidation(const Vector2 &A, const Vector2 &B)
     Vector2 Ap = getWorldAddress(A);
     Vector2 Bp = getWorldAddress(B);
 
-    int x1, x2, y1, y2;
+    int x1 = (int)Ap.x;
+    int x2 = (int)Bp.x;
+    int y1 = (int)Ap.y;
+    int y2 = (int)Bp.y;
 
-    if (Ap.x < Bp.x)
+    int dx = std::abs(x2 - x1);
+    int sx = (x1 < x2) ? 1 : -1;
+    int dy = -std::abs(y2 - y1);
+    int sy = (y1 < y2) ? 1 : -1;
+    int error = dx + dy;
+
+    while (true)
     {
-        x1 = Ap.x;
-        x2 = Bp.x;
-        y1 = Ap.y;
-        y2 = Bp.y;
-    }
-    else
-    {
-        x1 = Bp.x;
-        x2 = Ap.x;
-        y1 = Bp.y;
-        y2 = Ap.y;
+        setType(x1, y1, Type::WALL);
+        if (x1 == x2 && y1 == y2)
+        {
+            return true;
+        }
+        int e2 = 2 * error;
+        if (e2 >= dy)
+        {
+            error += dy;
+            x1 += sx;
+        }
+        if (e2 <= dx)
+        {
+            error += dx;
+            y1 += sy;
+        }
     }
 
     // BRESENHAM algorithm to find all squares in the way
     // https://en.wikipedia.org/wiki/Bresenham%27s_line_algorithm#:~:text=Bresenham's%20line%20algorithm%20is%20a%20line%20drawing%20algorithm
-    if (std::abs(y2 - y1) < std::abs(x2 - x2))
-    {
-        int dx = x2 - x1;
-        int dy = y2 - y1;
-        int yi = 1;
-        if (dy < 0)
-        {
-            yi = -1;
-            dy = -dy;
-        }
-        int D = (2 * dy) - dx;
-        int y = y1;
-
-        for (int x = x1; x < x2; x++)
-        {
-            setType(x, y, Type::WALL);
-            if (D > 0)
-            {
-                y += yi;
-                D += (2 * (dy - dx));
-            }
-            else
-            {
-                D += 2 * dy;
-            }
-        }
-    }
-    else
-    {
-        int dx = x2 - x1;
-        int dy = y2 - y1;
-        int xi = 1;
-        if (dx < 0)
-        {
-            xi -= 1;
-            dx = -dx;
-        }
-        int D = (2 * dx) - dy;
-        int x = x1;
-
-        for (int y = y1; y < y2; y++)
-        {
-            setType(x, y, Type::WALL);
-            if (D > 0)
-            {
-                x += xi;
-                D += (2 * (dx - dy));
-            }
-            else
-            {
-                D += 2 * dx;
-            }
-        }
-    }
+    /*if (std::abs(y2 - y1) < std::abs(x2 - x2))*/
+    /*{*/
+    /*    if (Ap.x < Bp.x)*/
+    /*    {*/
+    /*        x1 = Ap.x;*/
+    /*        x2 = Bp.x;*/
+    /*        y1 = Ap.y;*/
+    /*        y2 = Bp.y;*/
+    /*    }*/
+    /*    else*/
+    /*    {*/
+    /*        x1 = Bp.x;*/
+    /*        x2 = Ap.x;*/
+    /*        y1 = Bp.y;*/
+    /*        y2 = Ap.y;*/
+    /*    }*/
+    /**/
+    /*    int dx = x2 - x1;*/
+    /*    int dy = y2 - y1;*/
+    /*    int yi = 1;*/
+    /*    if (dy < 0)*/
+    /*    {*/
+    /*        yi = -1;*/
+    /*        dy = -dy;*/
+    /*    }*/
+    /*    int D = (2 * dy) - dx;*/
+    /*    int y = y1;*/
+    /**/
+    /*    for (int x = x1; x < x2; x++)*/
+    /*    {*/
+    /*        setType(x, y, Type::WALL);*/
+    /*        if (D > 0)*/
+    /*        {*/
+    /*            y += yi;*/
+    /*            D += (2 * (dy - dx));*/
+    /*        }*/
+    /*        else*/
+    /*        {*/
+    /*            D += 2 * dy;*/
+    /*        }*/
+    /*    }*/
+    /*}*/
+    /*else*/
+    /*{*/
+    /*    if (Ap.y < Bp.y)*/
+    /*    {*/
+    /*        x1 = Ap.x;*/
+    /*        x2 = Bp.x;*/
+    /*        y1 = Ap.y;*/
+    /*        y2 = Bp.y;*/
+    /*    }*/
+    /*    else*/
+    /*    {*/
+    /*        x1 = Bp.x;*/
+    /*        x2 = Ap.x;*/
+    /*        y1 = Bp.y;*/
+    /*        y2 = Ap.y;*/
+    /*    }*/
+    /**/
+    /*    int dx = x2 - x1;*/
+    /*    int dy = y2 - y1;*/
+    /*    int xi = 1;*/
+    /*    if (dx < 0)*/
+    /*    {*/
+    /*        xi -= 1;*/
+    /*        dx = -dx;*/
+    /*    }*/
+    /*    int D = (2 * dx) - dy;*/
+    /*    int x = x1;*/
+    /**/
+    /*    for (int y = y1; y < y2; y++)*/
+    /*    {*/
+    /*        setType(x, y, Type::WALL);*/
+    /*        if (D > 0)*/
+    /*        {*/
+    /*            x += xi;*/
+    /*            D += (2 * (dx - dy));*/
+    /*        }*/
+    /*        else*/
+    /*        {*/
+    /*            D += 2 * dx;*/
+    /*        }*/
+    /*    }*/
+    /*}*/
 
     return true;
 }
@@ -176,7 +219,7 @@ void World::setType(int x, int y, Type type)
     tiles[y * game::WIDTH + x]->setType(type);
 }
 
-const Rectangle &World::getRectangle(int x, int y) const
+Rectangle World::getRectangle(int x, int y) const
 {
     if (x < 0)
         return {-(float)game::TILE_SIZE, (float)(y * game::TILE_SIZE), (float)game::TILE_SIZE, (float)game::TILE_SIZE};
