@@ -2,34 +2,38 @@
 #include "raylib.h"
 #include "raymath.h"
 #include "world.h"
-#include <iostream>
 #include <algorithm>
 #include <cmath>
+#include <iostream>
 #include <limits>
 
-std::vector<Path*> Path::bakedPaths = std::vector<Path*>();
+std::vector<Path *> Path::bakedPaths = std::vector<Path *>();
 
 Path::Path(const Vector2 &A, const Vector2 &B)
 {
     start = A;
     end = B;
-    if (World::getInstance() -> lineValidation(A, B))
-		straightSegmentAlgorithm(A, B);
+    if (World::getInstance()->lineValidation(A, B))
+        straightSegmentAlgorithm(A, B);
 }
 
-Path* Path::newPath(const Vector2& A, const Vector2& B) {
-    for (Path* p : bakedPaths) {
-        if (p->isCloseEnough(A, B)) {
+Path *Path::newPath(const Vector2 &A, const Vector2 &B)
+{
+    for (Path *p : bakedPaths)
+    {
+        if (p->isCloseEnough(A, B))
+        {
             // TODO: move p back to front of queue;
             return p;
         }
     }
-    Path* p = new Path(A, B);
+    Path *p = new Path(A, B);
 
     bakedPaths.insert(bakedPaths.begin(), p);
 
-    if (bakedPaths.size() > 1000) {
-        Path* lastPath = bakedPaths.at(bakedPaths.size());
+    if (bakedPaths.size() > 1000)
+    {
+        Path *lastPath = bakedPaths.at(bakedPaths.size());
         bakedPaths.pop_back();
         delete lastPath;
     }
@@ -53,7 +57,7 @@ Force Path::getDirectionFromNearby(const Vector2 &C)
 {
     Segment *closestSegment;
     float closestDistanceSqr = std::numeric_limits<float>::max();
-    Force closestPoint = { Vector2Zero(), Vector2Zero() };
+    Force closestPoint = {Vector2Zero(), Vector2Zero()};
 
     for (int i = 0; i < segmentCount; i++)
     {
@@ -98,26 +102,31 @@ Force Path::getProjectedPointOnSegment(const Segment &segment, const Vector2 &P)
     }
     if (param >= 1)
     {
-        if (Vector2Equals(B, end)) {
-			return {B, Vector2Subtract(B, P)};
+        if (Vector2Equals(B, end))
+        {
+            return {B, Vector2Subtract(B, P)};
         }
-        else {
+        else
+        {
             return getProjectedPointOnSegment(*getSegment(segment.index + 1), P);
         }
     }
     return {Vector2Add(A, Vector2Scale(Vector2Subtract(B, A), param)), direction};
 }
 
-bool Path::isCloseEnough(const Vector2& A, const Vector2& B) {
-    if (Vector2DistanceSqr(B, end) < 400.0f) {
-        if (Vector2DistanceSqr(getDirectionFromNearby(A).origin, A) < 4000.0f) {
-			return true;
+bool Path::isCloseEnough(const Vector2 &A, const Vector2 &B)
+{
+    if (Vector2DistanceSqr(B, end) < 400.0f)
+    {
+        if (Vector2DistanceSqr(getDirectionFromNearby(A).origin, A) < 4000.0f)
+        {
+            return true;
         }
     }
-	return false;
+    return false;
 }
 
-Segment *Path::getSegment(int index) 
+Segment *Path::getSegment(int index)
 {
     if (index < segmentCount)
     {
@@ -126,6 +135,6 @@ Segment *Path::getSegment(int index)
     else
     {
         return &segments[index]; // TODO: make it retrieve from vector when
-                                // segment
+                                 // segment
     }
 }

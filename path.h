@@ -20,10 +20,10 @@ class Path
 {
   public:
     ~Path();
-    Path(const Path&) = delete;
-    Path operator=(const Path&) = delete;
+    Path(const Path &) = delete;
+    Path operator=(const Path &) = delete;
 
-    static Path* newPath(const Vector2& A, const Vector2& B);
+    static Path *newPath(const Vector2 &A, const Vector2 &B);
 
     void render();
     Force getDirectionFromNearby(const Vector2 &C);
@@ -37,11 +37,11 @@ class Path
     // algorithms
     void straightSegmentAlgorithm(const Vector2 &A, const Vector2 &B);
 
-    Force getProjectedPointOnSegment(const Segment& segment, const Vector2& P);
+    Force getProjectedPointOnSegment(const Segment &segment, const Vector2 &P);
 
     Segment *getSegment(int index);
 
-    bool isCloseEnough(const Vector2& A, const Vector2& B);
+    bool isCloseEnough(const Vector2 &A, const Vector2 &B);
 
     Vector2 start;
     Vector2 end;
