@@ -6,7 +6,7 @@
 #include <cmath>
 #include <limits>
 
-std::vector<Path *> Path::bakedPaths = std::vector<Path *>();
+// std::vector<Path *> Path::bakedPaths = std::vector<Path *>();
 
 Path::Path(const Vector2 &A, const Vector2 &B) : users(0)
 {
@@ -21,22 +21,23 @@ Path::Path(const Vector2 &A, const Vector2 &B) : users(0)
 Path *Path::newPath(const Vector2 &A, const Vector2 &B)
 {
     Path *path;
-    if (!World::getInstance()->lineValidation(A, B))
-    {
-        for (Path *p : bakedPaths)
-        {
-            if (p->isCloseEnough(A, B))
-            {
-                // TODO: move p back to front of queue;
-                return p;
-            }
-        }
-        path = new Path(A, B);
-    }
-    else
-    {
-        path = new Path(A, B);
-    }
+    // if (!World::getInstance()->lineValidation(A, B))
+    // {
+    // for (Path *p : bakedPaths)
+    // {
+    //     if (p->isCloseEnough(A, B))
+    //     {
+    //         // TODO: move p back to front of queue;
+    //         return p;
+    //     }
+    // }
+    //    path = new Path(A, B);
+    // }
+    // else
+    // {
+    // }
+
+    path = new Path(A, B);
 
     if (path->segmentCount == 0)
     {
@@ -44,14 +45,14 @@ Path *Path::newPath(const Vector2 &A, const Vector2 &B)
         return nullptr;
     }
 
-    bakedPaths.insert(bakedPaths.begin(), path);
+    // bakedPaths.insert(bakedPaths.begin(), path);
 
-    if (bakedPaths.size() > 1000)
-    {
-        Path *lastPath = bakedPaths.at(bakedPaths.size() - 1);
-        bakedPaths.pop_back();
-        delete lastPath;
-    }
+    // if (bakedPaths.size() > 1000)
+    // {
+    //     Path *lastPath = bakedPaths.at(bakedPaths.size() - 1);
+    //     bakedPaths.pop_back();
+    //     delete lastPath;
+    // }
     return path;
 }
 

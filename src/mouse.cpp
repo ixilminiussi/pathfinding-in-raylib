@@ -129,7 +129,7 @@ void Mouse::renderTop()
                                2 * M_PI); // Normalize angle between 0 and 2π
 
             Vector2 goal = {GetMouseX() + r * cos(theta), GetMouseY() + r * sin(theta)};
-            DrawCircleV({GetMouseX() + r * cos(theta), GetMouseY() + r * sin(theta)}, 6.0f, fill);
+            DrawCircleV(goal, 6.0f, fill);
         }
         break;
     case Mode::Editing:

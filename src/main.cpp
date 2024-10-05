@@ -40,7 +40,7 @@ int main()
 
             if (mouse->mode == Mode::Moving && IsMouseButtonReleased(MOUSE_BUTTON_LEFT))
             {
-                if (CheckCollisionPointRec(s->getPosition(), mouse->getSelectionArea()))
+                if (CheckCollisionCircleRec(s->getPosition(), Soldier::radius + 2.0f, mouse->getSelectionArea()))
                 {
                     s->select();
                 }
