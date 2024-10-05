@@ -1,47 +1,60 @@
+#include "effects.h"
 #include "mouse.h"
 #include "namespaces.h"
 #include "raylib.h"
 #include "soldier.h"
 #include "world.h"
 
-int main() {
-    InitWindow(screen::WIDTH, screen::HEIGHT, "Boids!");
+int main()
+{
+    InitWindow(screen::WIDTH, screen::HEIGHT, "Troops");
     if (screen::FULL_SCREEN)
         SetWindowState(FLAG_FULLSCREEN_MODE);
 
-    for (int i = 0; i < game::SOLDIER_COUNT; i++) {
-        new Soldier({(float)GetRandomValue(0, screen::WIDTH),
-                     (float)GetRandomValue(0, screen::HEIGHT)});
+    for (int i = 0; i < game::SOLDIER_COUNT; i++)
+    {
+        new Soldier({(float)GetRandomValue(0, screen::WIDTH), (float)GetRandomValue(0, screen::HEIGHT)});
     }
 
     Mouse *mouse = Mouse::getInstance();
     World *world = World::getInstance();
 
-    while (!WindowShouldClose()) {
+    while (!WindowShouldClose())
+    {
         BeginDrawing();
         ClearBackground(shoshone::maroon);
         game::DELTA = GetFrameTime();
 
-        mouse->update(game::DELTA);
-        world->render();
-
-        // city.render();
-        for (Soldier *s : Soldier::army) {
+        for (Soldier *s : Soldier::army)
+        {
             s->update(game::DELTA);
-            s->render();
+            s->renderBelow();
+        }
 
-            if (mouse->mode == Mode::Moving &&
-                IsMouseButtonReleased(MOUSE_BUTTON_LEFT)) {
-                if (CheckCollisionPointRec(s->getPosition(),
-                                           mouse->getSelectionArea())) {
+        mouse->update(game::DELTA);
+        mouse->renderBelow();
+
+        for (Soldier *s : Soldier::army)
+        {
+            s->renderAbove();
+
+            if (mouse->mode == Mode::Moving && IsMouseButtonReleased(MOUSE_BUTTON_LEFT))
+            {
+                if (CheckCollisionPointRec(s->getPosition(), mouse->getSelectionArea()))
+                {
                     s->select();
                 }
             }
         }
 
-        // world->render();
+        world->render();
+        mouse->renderTop();
 
-        mouse->render();
+        for (Effect *e : Effect::effects)
+        {
+            e->update(game::DELTA);
+            e->render();
+        }
 
         // Mouse selections
 

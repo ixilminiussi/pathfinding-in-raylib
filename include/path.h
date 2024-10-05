@@ -30,12 +30,15 @@ class Path
 
     static std::vector<Path *> bakedPaths;
 
+    void hello();
+    void goodbye();
+
   private:
     Path() = delete;
     Path(const Vector2 &A, const Vector2 &B);
 
     // algorithms
-    void straightSegmentAlgorithm(const Vector2 &A, const Vector2 &B);
+    bool straightSegmentAlgorithm(const Vector2 &A, const Vector2 &B);
 
     Force getProjectedPointOnSegment(const Segment &segment, const Vector2 &P);
 
@@ -45,6 +48,8 @@ class Path
 
     Vector2 start;
     Vector2 end;
+
+    int users;
 
     Segment segments[10];
     int segmentCount;

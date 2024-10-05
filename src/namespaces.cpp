@@ -3,15 +3,15 @@
 
 namespace screen
 {
-const int WIDTH = 1080;
-const int HEIGHT = 720;
-const bool FULL_SCREEN = false;
+const int WIDTH = 2256;
+const int HEIGHT = 1504;
+const bool FULL_SCREEN = true;
 } // namespace screen
 
 namespace game
 {
 int SOLDIER_COUNT = 200;
-const int TILE_SIZE = 5;
+const int TILE_SIZE = 20;
 float DELTA;
 const int WIDTH = screen::WIDTH / TILE_SIZE;
 const int HEIGHT = screen::HEIGHT / TILE_SIZE;

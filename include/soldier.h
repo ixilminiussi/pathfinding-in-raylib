@@ -11,29 +11,33 @@ class Soldier
 
     void select();
     void deselect();
-    void target(const Vector2 &target, const float& acceptableDistanceSqr);
+    void target(const Vector2 &target, int unitID);
 
     void update(float dt);
-    void render() const;
+    void renderBelow() const;
+    void renderAbove() const;
 
     // Vector2 *getObjective();
-    const Vector2& getPosition() const;
+    const Vector2 &getPosition() const;
 
     static std::vector<Soldier *> army;
     static std::vector<Soldier *> selected;
 
+    static float radius;
+
   private:
     Vector2 position;
     Vector2 direction;
-    Vector2 objective;
 
+    Vector2 objective;
     bool isSelected, isTravelling;
-    float acceptableDistanceSqr;
+    int unitID;
 
     Path *path;
     double lastTimeImmobile;
 
-    static float radius;
+    double timeEntered;
+
     static float separationRangeSqr;
     static float separationStrength;
     static float obstacleRange;

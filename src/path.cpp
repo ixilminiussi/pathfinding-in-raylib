@@ -1,55 +1,87 @@
 #include "path.h"
+#include "namespaces.h"
 #include "raylib.h"
 #include "raymath.h"
 #include "world.h"
-#include <algorithm>
 #include <cmath>
-#include <iostream>
 #include <limits>
 
 std::vector<Path *> Path::bakedPaths = std::vector<Path *>();
 
-Path::Path(const Vector2 &A, const Vector2 &B)
+Path::Path(const Vector2 &A, const Vector2 &B) : users(0)
 {
     start = A;
     end = B;
-    if (World::getInstance()->lineValidation(A, B))
-        straightSegmentAlgorithm(A, B);
+    if (!straightSegmentAlgorithm(A, B))
+    {
+        segmentCount = 0;
+    }
 }
 
 Path *Path::newPath(const Vector2 &A, const Vector2 &B)
 {
-    for (Path *p : bakedPaths)
+    Path *path;
+    if (!World::getInstance()->lineValidation(A, B))
     {
-        if (p->isCloseEnough(A, B))
+        for (Path *p : bakedPaths)
         {
-            // TODO: move p back to front of queue;
-            return p;
+            if (p->isCloseEnough(A, B))
+            {
+                // TODO: move p back to front of queue;
+                return p;
+            }
         }
+        path = new Path(A, B);
     }
-    Path *p = new Path(A, B);
+    else
+    {
+        path = new Path(A, B);
+    }
 
-    bakedPaths.insert(bakedPaths.begin(), p);
+    if (path->segmentCount == 0)
+    {
+        delete path;
+        return nullptr;
+    }
+
+    bakedPaths.insert(bakedPaths.begin(), path);
 
     if (bakedPaths.size() > 1000)
     {
-        Path *lastPath = bakedPaths.at(bakedPaths.size());
+        Path *lastPath = bakedPaths.at(bakedPaths.size() - 1);
         bakedPaths.pop_back();
         delete lastPath;
     }
-
-    return p;
+    return path;
 }
 
 Path::~Path()
 {
 }
 
+void Path::hello()
+{
+    users++;
+}
+
+void Path::goodbye()
+{
+    users--;
+}
+
 void Path::render()
 {
+    Color yellow = ColorAlphaBlend(shoshone::maroon, shoshone::yellow, Color{150, 150, 150, 150});
+
     for (int i = 0; i < segmentCount; i++)
     {
-        DrawLineEx(getSegment(i)->A, getSegment(i)->B, 1.0f, WHITE);
+        DrawLineEx(getSegment(i)->A, getSegment(i)->B, 3.0f, {yellow.r, yellow.g, yellow.b, 100});
+
+        DrawCircleV(getSegment(i)->A, 4.0f, yellow);
+        if (i == segmentCount - 1)
+        {
+            DrawCircleV(getSegment(i)->B, 6.0f, yellow);
+        }
     }
 }
 
@@ -75,10 +107,15 @@ Force Path::getDirectionFromNearby(const Vector2 &C)
     return closestPoint;
 }
 
-void Path::straightSegmentAlgorithm(const Vector2 &A, const Vector2 &B)
+bool Path::straightSegmentAlgorithm(const Vector2 &A, const Vector2 &B)
 {
-    segmentCount = 1;
-    segments[0] = {A, B, 1};
+    if (World::getInstance()->lineValidation(A, B))
+    {
+        segmentCount = 1;
+        segments[0] = {A, B, 1};
+        return true;
+    }
+    return false;
 }
 
 Force Path::getProjectedPointOnSegment(const Segment &segment, const Vector2 &P)
@@ -116,7 +153,7 @@ Force Path::getProjectedPointOnSegment(const Segment &segment, const Vector2 &P)
 
 bool Path::isCloseEnough(const Vector2 &A, const Vector2 &B)
 {
-    if (Vector2DistanceSqr(B, end) < 400.0f)
+    if (Vector2DistanceSqr(B, end) < 4000.0f)
     {
         if (Vector2DistanceSqr(getDirectionFromNearby(A).origin, A) < 4000.0f)
         {

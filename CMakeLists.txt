@@ -28,6 +28,7 @@ set(SOURCES
     src/soldier.cpp
     src/tile.cpp
     src/world.cpp
+	src/effects.cpp
 )
 
 # Define header files (optional, but useful for IDEs)
@@ -38,6 +39,7 @@ set(HEADERS
     include/soldier.h
     include/tile.h
     include/world.h
+	include/effects.h
 )
 
 # Add the executable
