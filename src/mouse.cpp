@@ -37,7 +37,7 @@ void Mouse::update(float dt)
     case Mode::Editing:
         if (IsKeyPressed(KEY_TAB))
         {
-            mode = Mode::Moving;
+            mode = Mode::Playing;
         }
 
         editingRadius -= GetMouseWheelMove() * 10.0f;
@@ -45,7 +45,6 @@ void Mouse::update(float dt)
             editingRadius = 20.0f;
         if (editingRadius > 150.0f)
             editingRadius = 150.0f;
-
         if (IsMouseButtonDown(MOUSE_BUTTON_LEFT))
         {
             world->paintArea(GetMousePosition(), editingRadius, TileCategory::WALL);
@@ -56,7 +55,7 @@ void Mouse::update(float dt)
         }
 
         break;
-    case Mode::Moving:
+    case Mode::Playing:
 
         if (IsKeyPressed(KEY_SPACE))
         {
@@ -120,7 +119,7 @@ void Mouse::renderTop()
 
     switch (mode)
     {
-    case Mode::Moving:
+    case Mode::Playing:
         // Sunflower seed algorithm for evenly distributed points in a circle
         for (int n = 1; n <= numSoldiers; n++) // Start from 1 to avoid clustering at the center
         {
@@ -131,8 +130,33 @@ void Mouse::renderTop()
             Vector2 goal = {GetMouseX() + r * cos(theta), GetMouseY() + r * sin(theta)};
             DrawCircleV(goal, 6.0f, fill);
         }
+
+        // Menu
+        DrawText("<Tab>", 150.0f, 30.0f, 32, outline);
+        DrawText("   Editing", 265.0f, 30.0f, 32, fill);
+        DrawText("Playing", 425.0f, 30.0f, 32, outline);
+        DrawText("<Space>", 115.0f, 100.0f, 32, outline);
+        DrawText("   Deselect all", 265.0f, 100.0f, 32, outline);
+        DrawText("<Left Click>", 56.0f, 150.0f, 32, outline);
+        DrawText("   Select units", 265.0f, 150.0f, 32, outline);
+        DrawText("<Right Click>", 44.0f, 200.0f, 32, outline);
+        DrawText("   Target location", 264.0f, 200.0f, 32, outline);
+        DrawLineEx({266.0f, 30.0f}, {266.0f, 235.0f}, 4.0f, outline);
         break;
+
     case Mode::Editing:
+
+        // Menu
+        DrawText("<Tab>", 150.0f, 30.0f, 32, outline);
+        DrawText("   Editing", 265.0f, 30.0f, 32, outline);
+        DrawText("Playing", 425.0f, 30.0f, 32, fill);
+        DrawText("<Scroll>", 115.0f, 100.0f, 32, outline);
+        DrawText("   Change editing area", 265.0f, 100.0f, 32, outline);
+        DrawText("<Left Click>", 56.0f, 150.0f, 32, outline);
+        DrawText("   Fill wall", 265.0f, 150.0f, 32, outline);
+        DrawText("<Right Click>", 44.0f, 200.0f, 32, outline);
+        DrawText("   Clear wall", 264.0f, 200.0f, 32, outline);
+        DrawLineEx({266.0f, 30.0f}, {266.0f, 235.0f}, 4.0f, outline);
         break;
     }
 }
@@ -145,7 +169,7 @@ void Mouse::renderBelow()
         DrawCircleV(GetMousePosition(), editingRadius,
                     {shoshone::yellow.r, shoshone::yellow.g, shoshone::yellow.b, 100});
         break;
-    case Mode::Moving:
+    case Mode::Playing:
         if (IsMouseButtonDown(MOUSE_BUTTON_LEFT))
         {
             DrawRectangleRec(selectionArea, fill);

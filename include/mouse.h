@@ -4,7 +4,7 @@
 enum Mode
 {
     Editing,
-    Moving
+    Playing
 };
 
 class Mouse
