@@ -74,6 +74,7 @@ Force Path::getDirectionFromNearby(const Vector2 &C) {
 
 bool Path::aStarAlgorithm(const Vector2 &A, const Vector2 &B) {
     Graph *graph = Graph::getInstance();
+    World *world = World::getInstance();
 
     Node *nA = graph->getBestNode(A);
     Node *nB = graph->getBestNode(B);
@@ -110,8 +111,8 @@ bool Path::aStarAlgorithm(const Vector2 &A, const Vector2 &B) {
         toSearch.erase(std::remove(toSearch.begin(), toSearch.end(), current),
                        toSearch.end());
 
-        if (current == nB) {
-            Node *n = nB;
+        if (world->lineValidation(current->getPosition(), B)) {
+            Node *n = current;
             while (n != nA) {
                 n->connectionBackward->connectionForward = n;
                 n = n->connectionBackward;
