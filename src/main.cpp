@@ -1,4 +1,5 @@
 #include "effects.h"
+#include "graph.h"
 #include "mouse.h"
 #include "namespaces.h"
 #include "raylib.h"
@@ -18,12 +19,23 @@ int main() {
     Mouse *mouse = Mouse::getInstance();
     World *world = World::getInstance();
 
+    Graph *graph = Graph::getInstance();
+
     while (!WindowShouldClose()) {
         BeginDrawing();
         ClearBackground(shoshone::maroon);
-        game::DELTA = GetFrameTime();
-        if (mouse->mode == Mode::Editing)
+
+        if (mouse->mode == Mode::Editing) {
             game::DELTA = 0;
+        } else {
+            game::DELTA = GetFrameTime();
+            if (world->updateFlag) {
+                graph->refresh();
+                graph = Graph::getInstance();
+            }
+        }
+
+        graph->render();
 
         for (Soldier *s : Soldier::army) {
             s->update(game::DELTA);

@@ -29,6 +29,8 @@ set(SOURCES
     src/tile.cpp
     src/world.cpp
 	src/effects.cpp
+	src/graph.cpp
+	src/node.cpp
 )
 
 # Define header files (optional, but useful for IDEs)
@@ -40,6 +42,8 @@ set(HEADERS
     include/tile.h
     include/world.h
 	include/effects.h
+	include/graph.h
+	include/node.h
 )
 
 # Add the executable

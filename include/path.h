@@ -1,23 +1,18 @@
 #pragma once
 #include "raylib.h"
-#include <algorithm>
-#include <vector>
 
-struct Segment
-{
+struct Segment {
     Vector2 A;
     Vector2 B;
     int index;
 };
 
-struct Force
-{
+struct Force {
     Vector2 origin;
     Vector2 direction;
 };
 
-class Path
-{
+class Path {
   public:
     ~Path();
     Path(const Path &) = delete;
@@ -28,29 +23,23 @@ class Path
     void render();
     Force getDirectionFromNearby(const Vector2 &C);
 
-    static std::vector<Path *> bakedPaths;
-
-    void hello();
-    void goodbye();
-
   private:
     Path() = delete;
     Path(const Vector2 &A, const Vector2 &B);
 
     // algorithms
+    bool aStarAlgorithm(const Vector2 &A, const Vector2 &B);
     bool straightSegmentAlgorithm(const Vector2 &A, const Vector2 &B);
 
     Force getProjectedPointOnSegment(const Segment &segment, const Vector2 &P);
 
     Segment *getSegment(int index);
 
-    bool isCloseEnough(const Vector2 &A, const Vector2 &B);
+    // bool isCloseEnough(const Vector2 &A, const Vector2 &B);
 
     Vector2 start;
     Vector2 end;
 
-    int users;
-
-    Segment segments[10];
+    Segment segments[100];
     int segmentCount;
 };
