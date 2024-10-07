@@ -28,9 +28,9 @@ set(SOURCES
     src/soldier.cpp
     src/tile.cpp
     src/world.cpp
-	src/effects.cpp
-	src/graph.cpp
-	src/node.cpp
+    src/effects.cpp
+    src/graph.cpp
+    src/node.cpp
 )
 
 # Define header files (optional, but useful for IDEs)
@@ -41,9 +41,9 @@ set(HEADERS
     include/soldier.h
     include/tile.h
     include/world.h
-	include/effects.h
-	include/graph.h
-	include/node.h
+    include/effects.h
+    include/graph.h
+    include/node.h
 )
 
 # Add the executable
@@ -54,21 +54,20 @@ if (UNIX)
     target_link_libraries(${PROJECT_NAME} pthread m dl raylib GL X11)
 endif()
 
-# Compiler and linker options for different configurations
-
-# Debug Configuration
-set(CMAKE_CXX_FLAGS_DEBUG "-g")
-target_compile_definitions(${PROJECT_NAME} PRIVATE _DEBUG)
-
-# Release Configuration
-set(CMAKE_CXX_FLAGS_RELEASE "-O2")
-target_compile_definitions(${PROJECT_NAME} PRIVATE NDEBUG)
-
 # Platform-specific options (here we assume x64 on Linux)
 if(CMAKE_SYSTEM_PROCESSOR MATCHES "x86_64")
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -m64")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -m64")
 endif()
+
+# Debug Configuration
+set(CMAKE_CXX_FLAGS_DEBUG "-g -fsanitize=address -fno-omit-frame-pointer")
+set(CMAKE_EXE_LINKER_FLAGS_DEBUG "-fsanitize=address")
+target_compile_definitions(${PROJECT_NAME} PRIVATE _DEBUG)
+
+# Release Configuration
+set(CMAKE_CXX_FLAGS_RELEASE "-O2")
+target_compile_definitions(${PROJECT_NAME} PRIVATE NDEBUG)
 
 # Add include directories and libraries
 target_include_directories(${PROJECT_NAME} PRIVATE include ${RAYLIB_DIR} ${RAYLIB_DIR}/external)

@@ -1,55 +1,63 @@
 #include "world.h"
 #include "namespaces.h"
 #include "tile.h"
+#include <cmath>
 #include <cstdlib>
 
 World *World::instance = nullptr;
 
-World *World::getInstance() {
-    if (instance == nullptr) {
+World *World::getInstance()
+{
+    if (instance == nullptr)
+    {
         instance = new World();
     }
     return instance;
 }
 
-World::World() {
+World::World()
+{
     typedef Tile *TileP;
 
     tiles = new TileP[game::WIDTH * game::HEIGHT];
 
-    for (int x = 0; x < game::WIDTH; x++) {
-        for (int y = 0; y < game::HEIGHT; y++) {
-            tiles[y * game::WIDTH + x] = new Tile(
-                Rectangle{(float)(x * game::TILE_SIZE),
-                          (float)(y * game::TILE_SIZE),
-                          (float)(game::TILE_SIZE), (float)(game::TILE_SIZE)},
-                x, y);
+    for (int x = 0; x < game::WIDTH; x++)
+    {
+        for (int y = 0; y < game::HEIGHT; y++)
+        {
+            tiles[y * game::WIDTH + x] = new Tile(Rectangle{(float)(x * game::TILE_SIZE), (float)(y * game::TILE_SIZE),
+                                                            (float)(game::TILE_SIZE), (float)(game::TILE_SIZE)},
+                                                  x, y);
         }
     }
 }
 
-void World::render() const {
-    for (int i = 0; i < game::WIDTH * game::HEIGHT; i++) {
+void World::render() const
+{
+    for (int i = 0; i < game::WIDTH * game::HEIGHT; i++)
+    {
         tiles[i]->render();
     }
 }
 
-void World::paintArea(const Vector2 &center, const float &radius,
-                      TileCategory category) {
-    for (int x = 0; x < game::WIDTH; x++) {
-        for (int y = 0; y < game::HEIGHT; y++) {
-            if (CheckCollisionCircleRec(
-                    center, radius,
-                    tiles[y * game::WIDTH + x]->getRectangle())) {
+void World::paintArea(const Vector2 &center, const float &radius, TileCategory category)
+{
+    for (int x = 0; x < game::WIDTH; x++)
+    {
+        for (int y = 0; y < game::HEIGHT; y++)
+        {
+            if (CheckCollisionCircleRec(center, radius, tiles[y * game::WIDTH + x]->getRectangle()))
+            {
                 tiles[y * game::WIDTH + x]->setTileCategory(category);
 
-                for (int rx = -1; rx <= 1; rx++) {
-                    for (int ry = -1; ry <= 1; ry++) {
-                        if (x + rx >= 0 && x + rx < game::WIDTH &&
-                            y + ry >= 0 && y + ry < game::HEIGHT) {
+                for (int rx = -1; rx <= 1; rx++)
+                {
+                    for (int ry = -1; ry <= 1; ry++)
+                    {
+                        if (x + rx >= 0 && x + rx < game::WIDTH && y + ry >= 0 && y + ry < game::HEIGHT)
+                        {
 
-                            tiles[(y + ry) * game::WIDTH + (x + rx)]
-                                ->updatePosition();
+                            tiles[(y + ry) * game::WIDTH + (x + rx)]->updatePosition();
                         }
                     }
                 }
@@ -60,11 +68,13 @@ void World::paintArea(const Vector2 &center, const float &radius,
     updateFlag = true;
 }
 
-Vector2 World::getWorldAddress(const Vector2 &P) const {
-    return {P.x / game::TILE_SIZE, P.y / game::TILE_SIZE};
+Vector2 World::getWorldAddress(const Vector2 &P) const
+{
+    return {std::floor(P.x / (float)game::TILE_SIZE), std::floor(P.y / (float)game::TILE_SIZE)};
 }
 
-bool World::lineValidation(const Vector2 &A, const Vector2 &B) const {
+bool World::lineValidation(const Vector2 &A, const Vector2 &B) const
+{
     Vector2 Ap = getWorldAddress(A);
     Vector2 Bp = getWorldAddress(B);
 
@@ -81,22 +91,28 @@ bool World::lineValidation(const Vector2 &A, const Vector2 &B) const {
     int sy = (y1 < y2) ? 1 : -1;
     int error = dx + dy;
 
-    while (true) {
+    while (true)
+    {
         const Tile *tile = getTile(x1, y1);
-        if (tile != nullptr) {
-            if (!tile->isNavigable()) {
+        if (tile != nullptr)
+        {
+            if (!tile->isNavigable())
+            {
                 return false;
             }
         }
-        if (x1 == x2 && y1 == y2) {
+        if (x1 == x2 && y1 == y2)
+        {
             return true;
         }
         int e2 = 2 * error;
-        if (e2 >= dy) {
+        if (e2 >= dy)
+        {
             error += dy;
             x1 += sx;
         }
-        if (e2 <= dx) {
+        if (e2 <= dx)
+        {
             error += dx;
             y1 += sy;
         }
@@ -105,7 +121,8 @@ bool World::lineValidation(const Vector2 &A, const Vector2 &B) const {
     return true;
 }
 
-TileCategory World::getTileCategory(int x, int y) const {
+TileCategory World::getTileCategory(int x, int y) const
+{
     if (x < 0)
         return TileCategory::WALL;
     if (x >= game::WIDTH)
@@ -118,31 +135,30 @@ TileCategory World::getTileCategory(int x, int y) const {
     return tiles[y * game::WIDTH + x]->getTileCategory();
 }
 
-void World::setTileCategory(int x, int y, TileCategory category) {
+void World::setTileCategory(int x, int y, TileCategory category)
+{
     if ((x < 0) || (x >= game::WIDTH) || (y < 0) || (y >= game::HEIGHT))
         return;
 
     tiles[y * game::WIDTH + x]->setTileCategory(category);
 }
 
-Rectangle World::getRectangle(int x, int y) const {
+Rectangle World::getRectangle(int x, int y) const
+{
     if (x < 0)
-        return {-(float)game::TILE_SIZE, (float)(y * game::TILE_SIZE),
-                (float)game::TILE_SIZE, (float)game::TILE_SIZE};
+        return {-(float)game::TILE_SIZE, (float)(y * game::TILE_SIZE), (float)game::TILE_SIZE, (float)game::TILE_SIZE};
     if (x >= game::WIDTH)
-        return {(float)screen::WIDTH, (float)(y * game::TILE_SIZE),
-                (float)game::TILE_SIZE, (float)game::TILE_SIZE};
+        return {(float)screen::WIDTH, (float)(y * game::TILE_SIZE), (float)game::TILE_SIZE, (float)game::TILE_SIZE};
     if (y < 0)
-        return {(float)(x * game::TILE_SIZE), -(float)game::TILE_SIZE,
-                (float)game::TILE_SIZE, (float)game::TILE_SIZE};
+        return {(float)(x * game::TILE_SIZE), -(float)game::TILE_SIZE, (float)game::TILE_SIZE, (float)game::TILE_SIZE};
     if (y >= game::HEIGHT)
-        return {(float)(x * game::TILE_SIZE), (float)game::HEIGHT,
-                (float)game::TILE_SIZE, (float)game::TILE_SIZE};
+        return {(float)(x * game::TILE_SIZE), (float)game::HEIGHT, (float)game::TILE_SIZE, (float)game::TILE_SIZE};
 
     return tiles[y * game::WIDTH + x]->getRectangle();
 }
 
-const Tile *World::getTile(int x, int y) const {
+const Tile *World::getTile(int x, int y) const
+{
     if ((x < 0) || (x >= game::WIDTH) || (y < 0) || (y >= game::HEIGHT))
         return nullptr;
 

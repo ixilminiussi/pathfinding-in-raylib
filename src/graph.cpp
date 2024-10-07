@@ -9,20 +9,24 @@
 
 Graph *Graph::instance = nullptr;
 
-Graph *Graph::getInstance() {
-    if (instance == nullptr) {
+Graph *Graph::getInstance()
+{
+    if (instance == nullptr)
+    {
         instance = new Graph();
     }
 
     return instance;
 }
 
-void Graph::refresh() {
+void Graph::refresh()
+{
     delete instance;
     instance = new Graph();
 }
 
-Graph::Graph() {
+Graph::Graph()
+{
     resolutionX = game::GRAPH_RESOLUTION;
 
     float width = screen::WIDTH / ((float)resolutionX - 1);
@@ -35,16 +39,14 @@ Graph::Graph() {
     nodes = new NodeP[resolutionY * resolutionX];
 
     Vector2 offset = {innerRadius, 0.25f * outerRadius};
-    for (int x = 0; x < resolutionX; x++) {
-        for (int y = 0; y < resolutionY; y++) {
+    for (int x = 0; x < resolutionX; x++)
+    {
+        for (int y = 0; y < resolutionY; y++)
+        {
             nodes[y * resolutionX + x] =
                 (y % 2 == 0)
-                    ? new Node(Vector2Add(offset, {innerRadius * 2.0f * x,
-                                                   outerRadius * 1.5f * y}),
-                               x, y)
-                    : new Node(Vector2Add(offset, {innerRadius * (2.0f * x - 1),
-                                                   outerRadius * 1.5f * y}),
-                               x, y);
+                    ? new Node(Vector2Add(offset, {innerRadius * 2.0f * x, outerRadius * 1.5f * y}), x, y)
+                    : new Node(Vector2Add(offset, {innerRadius * (2.0f * x - 1), outerRadius * 1.5f * y}), x, y);
         }
     }
 
@@ -52,26 +54,32 @@ Graph::Graph() {
     /*generateWeights();*/
 }
 
-Graph::~Graph() { delete[] nodes; }
+Graph::~Graph()
+{
+    delete[] nodes;
+}
 
-void Graph::generateEdges() {
+void Graph::generateEdges()
+{
     World *world = World::getInstance();
 
-    for (int x = 0; x < resolutionX; x++) {
-        for (int y = 0; y < resolutionY; y++) {
-            Node *potentialNeighbours[6] = {
-                (y % 2 == 0) ? getNode(x, y - 1) : getNode(x - 1, y - 1),
-                getNode(x - 1, y),
-                (y % 2 == 0) ? getNode(x, y + 1) : getNode(x - 1, y + 1),
-                (y % 2 == 0) ? getNode(x + 1, y - 1) : getNode(x, y - 1),
-                getNode(x + 1, y),
-                (y % 2 == 0) ? getNode(x + 1, y + 1) : getNode(x, y + 1)};
+    for (int x = 0; x < resolutionX; x++)
+    {
+        for (int y = 0; y < resolutionY; y++)
+        {
+            Node *potentialNeighbours[6] = {(y % 2 == 0) ? getNode(x, y - 1) : getNode(x - 1, y - 1),
+                                            getNode(x - 1, y),
+                                            (y % 2 == 0) ? getNode(x, y + 1) : getNode(x - 1, y + 1),
+                                            (y % 2 == 0) ? getNode(x + 1, y - 1) : getNode(x, y - 1),
+                                            getNode(x + 1, y),
+                                            (y % 2 == 0) ? getNode(x + 1, y + 1) : getNode(x, y + 1)};
 
-            for (int i = 0; i < 6; i++) {
-                if (potentialNeighbours[i] != nullptr) {
-                    if (world->lineValidation(
-                            getNode(x, y)->getPosition(),
-                            potentialNeighbours[i]->getPosition())) {
+            for (int i = 0; i < 6; i++)
+            {
+                if (potentialNeighbours[i] != nullptr)
+                {
+                    if (world->lineValidation(getNode(x, y)->getPosition(), potentialNeighbours[i]->getPosition()))
+                    {
                         getNode(x, y)->addNeighbour(potentialNeighbours[i]);
                     }
                 }
@@ -80,38 +88,44 @@ void Graph::generateEdges() {
     }
 }
 
-Node *Graph::getNode(int x, int y) const {
-    return (x >= 0 && x < resolutionX && y >= 0 && y < resolutionY)
-               ? nodes[y * resolutionX + x]
-               : nullptr;
+Node *Graph::getNode(int x, int y) const
+{
+    return (x >= 0 && x < resolutionX && y >= 0 && y < resolutionY) ? nodes[y * resolutionX + x] : nullptr;
 }
 
-Node *Graph::getBestNode(const Vector2 &P) const {
-    Node *bestNode;
+Node *Graph::getBestNode(const Vector2 &P) const
+{
+    Node *bestNode = nullptr;
     float bestDistanceSqr = std::numeric_limits<float>::infinity();
 
     World *world = World::getInstance();
 
-    for (int x = 0; x < resolutionX; x++) {
-        for (int y = 0; y < resolutionY; y++) {
+    for (int x = 0; x < resolutionX; x++)
+    {
+        for (int y = 0; y < resolutionY; y++)
+        {
             Node *currentNode = getNode(x, y);
-            if (Vector2DistanceSqr(currentNode->getPosition(), P) >
-                bestDistanceSqr) {
+            if (Vector2DistanceSqr(currentNode->getPosition(), P) > bestDistanceSqr)
+            {
                 continue;
             }
 
             float currentDistanceSqr;
-            if (world->lineValidation(currentNode->getPosition(), P)) {
-                currentDistanceSqr =
-                    Vector2DistanceSqr(currentNode->getPosition(), P);
-            } else {
+            if (world->lineValidation(currentNode->getPosition(), P))
+            {
+                currentDistanceSqr = Vector2DistanceSqr(currentNode->getPosition(), P);
+            }
+            else
+            {
                 currentDistanceSqr = std::numeric_limits<float>::infinity();
             }
-            if (currentDistanceSqr < bestDistanceSqr) {
+            if (currentDistanceSqr < bestDistanceSqr)
+            {
                 bestNode = currentNode;
             }
 
-            if (currentDistanceSqr <= outerRadius * outerRadius) {
+            if (currentDistanceSqr <= outerRadius * outerRadius)
+            {
                 return bestNode;
             }
         }
@@ -120,10 +134,13 @@ Node *Graph::getBestNode(const Vector2 &P) const {
     return bestNode;
 }
 
-void Graph::render() {
+void Graph::render()
+{
     return;
-    for (int x = 0; x < resolutionX; x++) {
-        for (int y = 0; y < resolutionY; y++) {
+    for (int x = 0; x < resolutionX; x++)
+    {
+        for (int y = 0; y < resolutionY; y++)
+        {
             nodes[y * resolutionX + x]->render();
         }
     }

@@ -1,20 +1,23 @@
 #pragma once
 #include "raylib.h"
 
-struct Segment {
+struct Segment
+{
     Vector2 A;
     Vector2 B;
     int index;
 };
 
-struct Force {
+struct Force
+{
     Vector2 origin;
     Vector2 direction;
 };
 
-class Path {
+class Path
+{
   public:
-    ~Path();
+    ~Path() = default;
     Path(const Path &) = delete;
     Path operator=(const Path &) = delete;
 

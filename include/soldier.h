@@ -26,6 +26,8 @@ class Soldier
     static float radius;
 
   private:
+    bool isInWall() const;
+
     Vector2 position;
     Vector2 direction;
 
