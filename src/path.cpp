@@ -19,15 +19,14 @@ Path::Path(const Vector2 &A, const Vector2 &B) : segmentCount(0)
     end = B;
     if (!straightSegmentAlgorithm(A, B))
     {
+        /*dijkstraAlgorithm(A, B);*/
         aStarAlgorithm(A, B);
     }
 }
 
 Path *Path::newPath(const Vector2 &A, const Vector2 &B)
 {
-    Path *path;
-
-    path = new Path(A, B);
+    Path *path = new Path(A, B);
 
     if (path->segmentCount == 0)
     {
@@ -172,9 +171,6 @@ bool Path::aStarAlgorithm(const Vector2 &A, const Vector2 &B)
             bool inSearch = std::find(toSearch.begin(), toSearch.end(), n) != toSearch.end();
 
             float costToNeighbour = current->G + graph->outerRadius * 2.0f;
-            if (n == nB)
-            {
-            }
 
             if (!inSearch || costToNeighbour < n->G)
             {
@@ -192,6 +188,68 @@ bool Path::aStarAlgorithm(const Vector2 &A, const Vector2 &B)
     }
 
     return false;
+}
+
+bool Path::dijkstraAlgorithm(const Vector2 &A, const Vector2 &B)
+{
+    Graph *graph = Graph::getInstance();
+    World *world = World::getInstance();
+
+    Node *nA = graph->getBestNode(A);
+    Node *nB = graph->getBestNode(B);
+    if (nA == nullptr || nB == nullptr)
+    {
+        return false;
+    }
+    int index = graph->getIndex(nA->x, nA->y);
+
+    if (nB->connectionsBackward[index] == nullptr)
+    {
+        return false;
+    }
+
+    // backpropagation
+    Node *n = nB;
+
+    while (n != nA)
+    {
+        if (world->lineValidation(n->getPosition(), A))
+        {
+            break;
+        }
+        Node *nSkip = n;
+        do
+        {
+            Vector2 P = nSkip->connectionsBackward[index]->getPosition();
+            if (world->lineValidation(P, n->getPosition()))
+            {
+                nSkip = nSkip->connectionsBackward[index];
+                n->connectionsBackward[index] = nSkip;
+                nSkip->connectionForward = n;
+            }
+            else
+            {
+                n->connectionsBackward[index] = nSkip;
+                nSkip->connectionForward = n;
+                break;
+            }
+
+        } while (nSkip != nA);
+        n = n->connectionsBackward[index];
+        segmentCount++;
+    }
+
+    segments[0] = {A, n->getPosition(), 1};
+
+    for (int i = 1; i <= segmentCount; i++)
+    {
+        segments[i] = {n->getPosition(), n->connectionForward->getPosition(), i + 1};
+        n = n->connectionForward;
+    }
+    segments[segmentCount + 1] = {n->getPosition(), B, segmentCount + 2};
+    segmentCount += 2;
+
+    return true;
 }
 
 bool Path::straightSegmentAlgorithm(const Vector2 &A, const Vector2 &B)

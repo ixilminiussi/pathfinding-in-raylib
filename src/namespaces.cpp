@@ -15,7 +15,7 @@ const int TILE_SIZE = 7;
 float DELTA;
 const int WIDTH = screen::WIDTH / TILE_SIZE;
 const int HEIGHT = screen::HEIGHT / TILE_SIZE;
-const int GRAPH_RESOLUTION = 25;
+const int GRAPH_RESOLUTION = 15;
 } // namespace game
 
 namespace shoshone

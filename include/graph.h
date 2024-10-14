@@ -5,7 +5,8 @@
 class Path;
 class Node;
 
-class Graph {
+class Graph
+{
   public:
     static Graph *getInstance();
     static void refresh();
@@ -19,6 +20,7 @@ class Graph {
 
     Node *getNode(int x, int y) const;
     Node *getBestNode(const Vector2 &P) const;
+    int getIndex(int x, int y) const;
 
     float outerRadius;
 

@@ -6,14 +6,15 @@
 #include "soldier.h"
 #include "world.h"
 
-int main() {
+int main()
+{
     InitWindow(screen::WIDTH, screen::HEIGHT, "Troops");
     if (screen::FULL_SCREEN)
         SetWindowState(FLAG_FULLSCREEN_MODE);
 
-    for (int i = 0; i < game::SOLDIER_COUNT; i++) {
-        new Soldier({(float)GetRandomValue(10, screen::WIDTH - 10),
-                     (float)GetRandomValue(10, screen::HEIGHT - 10)});
+    for (int i = 0; i < game::SOLDIER_COUNT; i++)
+    {
+        new Soldier({(float)GetRandomValue(10, screen::WIDTH - 10), (float)GetRandomValue(10, screen::HEIGHT - 10)});
     }
 
     Mouse *mouse = Mouse::getInstance();
@@ -21,15 +22,20 @@ int main() {
 
     Graph *graph = Graph::getInstance();
 
-    while (!WindowShouldClose()) {
+    while (!WindowShouldClose())
+    {
         BeginDrawing();
         ClearBackground(shoshone::maroon);
 
-        if (mouse->mode == Mode::Editing) {
+        if (mouse->mode == Mode::Editing)
+        {
             game::DELTA = 0;
-        } else {
+        }
+        else
+        {
             game::DELTA = GetFrameTime();
-            if (world->updateFlag) {
+            if (world->updateFlag)
+            {
                 graph->refresh();
                 graph = Graph::getInstance();
             }
@@ -37,7 +43,8 @@ int main() {
 
         graph->render();
 
-        for (Soldier *s : Soldier::army) {
+        for (Soldier *s : Soldier::army)
+        {
             s->update(game::DELTA);
             s->renderBelow();
         }
@@ -45,14 +52,14 @@ int main() {
         mouse->update(game::DELTA);
         mouse->renderBelow();
 
-        for (Soldier *s : Soldier::army) {
+        for (Soldier *s : Soldier::army)
+        {
             s->renderAbove();
 
-            if (mouse->mode == Mode::Playing &&
-                IsMouseButtonReleased(MOUSE_BUTTON_LEFT)) {
-                if (CheckCollisionCircleRec(s->getPosition(),
-                                            Soldier::radius + 2.0f,
-                                            mouse->getSelectionArea())) {
+            if (mouse->mode == Mode::Playing && IsMouseButtonReleased(MOUSE_BUTTON_LEFT))
+            {
+                if (CheckCollisionCircleRec(s->getPosition(), Soldier::radius + 2.0f, mouse->getSelectionArea()))
+                {
                     s->select();
                 }
             }
@@ -61,7 +68,8 @@ int main() {
         world->render();
         mouse->renderTop();
 
-        for (Effect *e : Effect::effects) {
+        for (Effect *e : Effect::effects)
+        {
             e->update(game::DELTA);
             e->render();
         }

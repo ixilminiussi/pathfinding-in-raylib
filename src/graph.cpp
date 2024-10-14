@@ -3,9 +3,11 @@
 #include "node.h"
 #include "raylib.h"
 #include "world.h"
+#include <algorithm>
 #include <cmath>
 #include <limits>
 #include <raymath.h>
+#include <vector>
 
 Graph *Graph::instance = nullptr;
 
@@ -43,19 +45,34 @@ Graph::Graph()
     {
         for (int y = 0; y < resolutionY; y++)
         {
-            nodes[y * resolutionX + x] =
-                (y % 2 == 0)
-                    ? new Node(Vector2Add(offset, {innerRadius * 2.0f * x, outerRadius * 1.5f * y}), x, y)
-                    : new Node(Vector2Add(offset, {innerRadius * (2.0f * x - 1), outerRadius * 1.5f * y}), x, y);
+            if (y % 2 == 0)
+            {
+                nodes[y * resolutionX + x] =
+                    new Node(Vector2Add(offset, {innerRadius * 2.0f * x, outerRadius * 1.5f * y}), x, y,
+                             resolutionX * resolutionY);
+            }
+            else
+            {
+                nodes[y * resolutionX + x] =
+                    new Node(Vector2Add(offset, {innerRadius * (2.0f * x - 1), outerRadius * 1.5f * y}), x, y,
+                             resolutionX * resolutionY);
+            }
         }
     }
 
     generateEdges();
-    /*generateWeights();*/
+    // generateWeights();
 }
 
 Graph::~Graph()
 {
+    for (int x = 0; x < resolutionX; x++)
+    {
+        for (int y = 0; y < resolutionY; y++)
+        {
+            delete nodes[y * resolutionX + x];
+        }
+    }
     delete[] nodes;
 }
 
@@ -81,6 +98,75 @@ void Graph::generateEdges()
                     if (world->lineValidation(getNode(x, y)->getPosition(), potentialNeighbours[i]->getPosition()))
                     {
                         getNode(x, y)->addNeighbour(potentialNeighbours[i]);
+                    }
+                }
+            }
+        }
+    }
+}
+
+int Graph::getIndex(int x, int y) const
+{
+    return y * resolutionX + x;
+}
+
+/** Uses Dijkstra's algorithm to generate paths from all nodes to all nodes
+ */
+void Graph::generateWeights()
+{
+    World *world = World::getInstance();
+
+    for (int x = 0; x < resolutionX; x++)
+    {
+        for (int y = 0; y < resolutionY; y++)
+        {
+            int index = y * resolutionX + x;
+
+            Node *nA = getNode(x, y);
+            if (nA == nullptr)
+                continue;
+
+            nA->G = 0;
+
+            std::vector<Node *> toSearch = std::vector<Node *>();
+            std::vector<Node *> processed = std::vector<Node *>();
+            toSearch.push_back(nA);
+
+            while (toSearch.size() > 0)
+            {
+                Node *current = toSearch.at(0);
+
+                for (Node *n : toSearch)
+                {
+                    if (n->G < current->G)
+                    {
+                        current = n;
+                    }
+                }
+
+                processed.push_back(current);
+                toSearch.erase(std::remove(toSearch.begin(), toSearch.end(), current), toSearch.end());
+
+                for (int i = 0; i < current->neighbourCount; i++)
+                {
+                    Node *n = current->neighbours[i];
+                    bool inProcessed = std::find(processed.begin(), processed.end(), n) != processed.end();
+                    if (inProcessed)
+                        continue;
+
+                    bool inSearch = std::find(toSearch.begin(), toSearch.end(), n) != toSearch.end();
+
+                    float costToNeighbour = current->G + outerRadius * 2;
+
+                    if (!inSearch || costToNeighbour < n->G)
+                    {
+                        n->G = costToNeighbour;
+                        n->connectionsBackward[index] = current;
+
+                        if (!inSearch)
+                        {
+                            toSearch.push_back(n);
+                        }
                     }
                 }
             }

@@ -2,13 +2,14 @@
 
 #include <raylib.h>
 
-class Node {
+class Node
+{
     typedef Node *NodeP;
 
   public:
     Node() = delete;
-    Node(const Vector2 &position, int x, int y);
-    ~Node() = default;
+    Node(const Vector2 &position, int x, int y, int length);
+    ~Node();
 
     void render();
     const int getWeight(const Node *node) const;
@@ -19,11 +20,13 @@ class Node {
     float G, H, F;
     Node *connectionBackward;
     Node *connectionForward;
+
+    Node **connectionsBackward;
     Node *neighbours[6];
     int neighbourCount;
+    int x, y;
 
   private:
-    int x, y;
     Vector2 position;
 };
 
