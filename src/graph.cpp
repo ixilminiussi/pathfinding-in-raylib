@@ -35,7 +35,8 @@ Graph::Graph()
     float innerRadius = width / 2.0f;
     outerRadius = width / std::sqrt(3.0f);
 
-    resolutionY = std::floor(screen::HEIGHT / (1.25f * innerRadius));
+    // FIX: incorrect, leads to overflowing grid
+    resolutionY = std::floor(screen::HEIGHT / (1.5f * innerRadius));
 
     typedef Node *NodeP;
     nodes = new NodeP[resolutionY * resolutionX];
@@ -226,7 +227,6 @@ const Node *Graph::getBestNode(const Vector2 &P) const
 
 void Graph::render() const
 {
-    return;
     for (int x = 0; x < resolutionX; x++)
     {
         for (int y = 0; y < resolutionY; y++)
