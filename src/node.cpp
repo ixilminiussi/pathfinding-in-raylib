@@ -1,17 +1,50 @@
 #include "node.h"
+#include <limits>
 #include <string>
 
-typedef Node *NodeP;
-
-Node::Node(const Vector2 &position, int x, int y, int length)
-    : position(position), x(x), y(y), neighbourCount(0), G(0), H(0), F(0)
+Node::Node(const Vector2 &position, int x, int y) : position(position), x(x), y(y), neighbourCount(0), G(0), H(0), F(0)
 {
-    connectionsBackward = new NodeP[length];
 }
 
-Node::~Node()
+Node::Node(const Node &other) : Node(other.position, other.x, other.y)
 {
-    delete[] connectionsBackward;
+    neighbourCount = other.neighbourCount;
+    for (int i = 0; i < neighbourCount; i++)
+    {
+        neighbours[i] = other.neighbours[i];
+    }
+
+    G = std::numeric_limits<float>::infinity();
+}
+
+Node &Node::operator=(const Node &other)
+{
+    if (this != &other)
+    {
+        position = other.position;
+        x = other.x;
+        y = other.y;
+        neighbourCount = other.neighbourCount;
+
+        for (int i = 0; i < neighbourCount; i++)
+        {
+            neighbours[i] = other.neighbours[i];
+        }
+    }
+
+    G = std::numeric_limits<float>::infinity();
+
+    return *this;
+}
+
+bool Node::operator==(const Node &other) const
+{
+    return (x == other.x && y == other.y && neighbourCount == other.neighbourCount);
+}
+
+bool Node::operator!=(const Node &other) const
+{
+    return !(*this == other);
 }
 
 void Node::render()
@@ -32,7 +65,7 @@ const Vector2 &Node::getPosition() const
     return position;
 }
 
-void Node::addNeighbour(Node *node)
+void Node::addNeighbour(const Node *node)
 {
     neighbours[neighbourCount] = node;
     neighbourCount++;

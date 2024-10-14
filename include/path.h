@@ -38,7 +38,7 @@ class Path
      * the actual implementation is in Graph, where we bake in all the necessary
      * into the nodes. This function simply reads those values
      */
-    bool dijkstraAlgorithm(const Vector2 &A, const Vector2 &B);
+    // bool dijkstraAlgorithm(const Vector2 &A, const Vector2 &B);
 
     Force getProjectedPointOnSegment(const Segment &segment, const Vector2 &P);
 

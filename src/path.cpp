@@ -80,74 +80,58 @@ bool Path::aStarAlgorithm(const Vector2 &A, const Vector2 &B)
     Graph *graph = Graph::getInstance();
     World *world = World::getInstance();
 
-    Node *nA = graph->getBestNode(A);
-    Node *nB = graph->getBestNode(B);
-    if (nA == nullptr || nB == nullptr)
-    {
+    const Node *nAP = graph->getBestNode(A);
+    const Node *nBP = graph->getBestNode(B);
+
+    // Ensure both start and end nodes are valid
+    if (!nAP || !nBP)
         return false;
-    }
 
-    float bigDistanceSqr = Vector2DistanceSqr(nA->getPosition(), nB->getPosition());
-
+    Node *nA = new Node(*nAP);
+    // Initialize G, H, and F values for start and end nodes
+    float bigDistanceSqr = Vector2DistanceSqr(nA->getPosition(), nBP->getPosition());
     nA->G = 0;
-    nA->H = bigDistanceSqr;
-    nA->F = bigDistanceSqr;
+    nA->H = nA->F = bigDistanceSqr;
 
-    nB->G = bigDistanceSqr;
-    nB->H = 0;
-    nB->F = bigDistanceSqr;
+    std::vector<Node *> toSearch = {nA};
+    std::vector<Node *> processed;
 
-    std::vector<Node *> toSearch = std::vector<Node *>();
-    std::vector<Node *> processed = std::vector<Node *>();
-    toSearch.push_back(nA);
-
-    while (toSearch.size() > 0)
+    while (!toSearch.empty())
     {
-        Node *current = toSearch.at(0);
-
-        for (Node *n : toSearch)
-        {
-            if (n->F < current->F || (n->F == current->F && n->H < current->H))
-            {
-                current = n;
-            }
-        }
+        // Find the node with the lowest F value
+        Node *current = *std::min_element(toSearch.begin(), toSearch.end(), [](Node *a, Node *b) {
+            return (a->F < b->F) || (a->F == b->F && a->H < b->H);
+        });
 
         processed.push_back(current);
         toSearch.erase(std::remove(toSearch.begin(), toSearch.end(), current), toSearch.end());
 
-        // found a connection
+        // Found a valid path to the destination
+        // TODO: Just because there is a straightline from there, doesn't mean
+        // this is the shortest path.
         if (world->lineValidation(current->getPosition(), B))
         {
-            // backpropagation
             Node *n = current;
-            while (n != nA)
+
+            while (*n != *nA)
             {
                 if (world->lineValidation(n->getPosition(), A))
-                {
                     break;
-                }
-                Node *nSkip = n;
-                do
-                {
-                    if (world->lineValidation(nSkip->connectionBackward->getPosition(), n->getPosition()))
-                    {
-                        nSkip = nSkip->connectionBackward;
-                        n->connectionBackward = nSkip;
-                        nSkip->connectionForward = n;
-                    }
-                    else
-                    {
-                        n->connectionBackward = nSkip;
-                        nSkip->connectionForward = n;
-                        break;
-                    }
 
-                } while (nSkip != nA);
+                Node *nSkip = n;
+                while (*nSkip != *nA &&
+                       world->lineValidation(nSkip->connectionBackward->getPosition(), n->getPosition()))
+                {
+                    nSkip = nSkip->connectionBackward;
+                    n->connectionBackward = nSkip;
+                    nSkip->connectionForward = n;
+                }
+
                 n = n->connectionBackward;
                 segmentCount++;
             }
 
+            // Create path segments
             segments[0] = {A, n->getPosition(), 1};
 
             for (int i = 1; i <= segmentCount; i++)
@@ -155,42 +139,84 @@ bool Path::aStarAlgorithm(const Vector2 &A, const Vector2 &B)
                 segments[i] = {n->getPosition(), n->connectionForward->getPosition(), i + 1};
                 n = n->connectionForward;
             }
+
             segments[segmentCount + 1] = {n->getPosition(), B, segmentCount + 2};
             segmentCount += 2;
+
+            for (Node *n : toSearch)
+            {
+                if (n != nullptr)
+                    delete n;
+            }
+            toSearch.clear();
+
+            for (Node *n : processed)
+            {
+                if (n != nullptr)
+                    delete n;
+            }
+            processed.clear();
 
             return true;
         }
 
+        // Process all neighbours
         for (int i = 0; i < current->neighbourCount; i++)
         {
-            Node *n = current->neighbours[i];
-            bool inProcessed = std::find(processed.begin(), processed.end(), n) != processed.end();
-            if (inProcessed)
-                continue;
+            Node *neighbour = new Node(*(current->neighbours[i]));
 
-            bool inSearch = std::find(toSearch.begin(), toSearch.end(), n) != toSearch.end();
+            // Skip if already processed
+            if (std::find_if(processed.begin(), processed.end(), [neighbour](Node *n) { return *neighbour == *n; }) !=
+                processed.end())
+            {
+                delete neighbour;
+                continue;
+            }
+
+            auto it = std::find_if(toSearch.begin(), toSearch.end(), [neighbour](Node *n) { return *neighbour == *n; });
+
+            if (it != toSearch.end())
+            {
+                delete neighbour;
+                neighbour = *(it);
+            }
 
             float costToNeighbour = current->G + graph->outerRadius * 2.0f;
 
-            if (!inSearch || costToNeighbour < n->G)
+            // Update G, H, F values if not in search or found a better path
+            if (it == toSearch.end() || costToNeighbour < neighbour->G)
             {
-                n->G = costToNeighbour;
-                n->connectionBackward = current;
+                neighbour->G = costToNeighbour;
+                neighbour->connectionBackward = current;
 
-                if (!inSearch)
+                if (it == toSearch.end())
                 {
-                    n->H = Vector2DistanceSqr(n->getPosition(), nB->getPosition());
-                    n->F = n->H + n->G;
-                    toSearch.push_back(n);
+                    neighbour->H = Vector2DistanceSqr(neighbour->getPosition(), nBP->getPosition());
+                    neighbour->F = neighbour->G + neighbour->H;
+                    toSearch.push_back(neighbour);
                 }
             }
         }
     }
 
+    for (Node *n : toSearch)
+    {
+        if (n != nullptr)
+            delete n;
+    }
+    toSearch.clear();
+
+    for (Node *n : processed)
+    {
+        if (n != nullptr)
+            delete n;
+    }
+    processed.clear();
+
     return false;
 }
 
-bool Path::dijkstraAlgorithm(const Vector2 &A, const Vector2 &B)
+/* bool Path::dijkstraAlgorithm(const Vector2 &A, const Vector2 &B)
 {
     Graph *graph = Graph::getInstance();
     World *world = World::getInstance();
@@ -243,14 +269,15 @@ bool Path::dijkstraAlgorithm(const Vector2 &A, const Vector2 &B)
 
     for (int i = 1; i <= segmentCount; i++)
     {
-        segments[i] = {n->getPosition(), n->connectionForward->getPosition(), i + 1};
-        n = n->connectionForward;
+        segments[i] = {n->getPosition(),
+n->connectionForward->getPosition(), i
++ 1}; n = n->connectionForward;
     }
     segments[segmentCount + 1] = {n->getPosition(), B, segmentCount + 2};
     segmentCount += 2;
 
     return true;
-}
+}*/
 
 bool Path::straightSegmentAlgorithm(const Vector2 &A, const Vector2 &B)
 {

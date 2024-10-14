@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <math.h>
 #include <raylib.h>
+#include <thread>
 
 Mouse *Mouse::instance = nullptr;
 
@@ -27,6 +28,11 @@ Mouse *Mouse::getInstance()
 }
 
 const float GOLDEN_ANGLE = 137.5f * M_PI / 180.0f;
+
+void createTargetThread(Soldier *s, const Vector2 &goal, int unitID)
+{
+    s->target(goal, unitID);
+}
 
 void Mouse::update(float dt)
 {
@@ -96,6 +102,8 @@ void Mouse::update(float dt)
             float scaleFactor = 12.0f; // Dynamically scale
             int numSoldiers = Soldier::selected.size();
 
+            std::vector<std::thread> threads;
+
             // Sunflower seed algorithm for evenly distributed points in a
             // circle
             for (int n = 1; n <= numSoldiers; n++) // Start from 1 to avoid clustering at the center
@@ -105,7 +113,13 @@ void Mouse::update(float dt)
                                    2 * M_PI); // Normalize angle between 0 and 2π
 
                 Vector2 goal = {GetMouseX() + r * cos(theta), GetMouseY() + r * sin(theta)};
-                Soldier::selected.at(n - 1)->target(goal, unitID); // Adjust index accordingly
+
+                threads.emplace_back(createTargetThread, Soldier::selected.at(n - 1), goal, unitID);
+            }
+
+            for (auto &t : threads)
+            {
+                t.join();
             }
         }
         break;

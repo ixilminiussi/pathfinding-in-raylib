@@ -48,14 +48,12 @@ Graph::Graph()
             if (y % 2 == 0)
             {
                 nodes[y * resolutionX + x] =
-                    new Node(Vector2Add(offset, {innerRadius * 2.0f * x, outerRadius * 1.5f * y}), x, y,
-                             resolutionX * resolutionY);
+                    new Node(Vector2Add(offset, {innerRadius * 2.0f * x, outerRadius * 1.5f * y}), x, y);
             }
             else
             {
                 nodes[y * resolutionX + x] =
-                    new Node(Vector2Add(offset, {innerRadius * (2.0f * x - 1), outerRadius * 1.5f * y}), x, y,
-                             resolutionX * resolutionY);
+                    new Node(Vector2Add(offset, {innerRadius * (2.0f * x - 1), outerRadius * 1.5f * y}), x, y);
             }
         }
     }
@@ -84,12 +82,12 @@ void Graph::generateEdges()
     {
         for (int y = 0; y < resolutionY; y++)
         {
-            Node *potentialNeighbours[6] = {(y % 2 == 0) ? getNode(x, y - 1) : getNode(x - 1, y - 1),
-                                            getNode(x - 1, y),
-                                            (y % 2 == 0) ? getNode(x, y + 1) : getNode(x - 1, y + 1),
-                                            (y % 2 == 0) ? getNode(x + 1, y - 1) : getNode(x, y - 1),
-                                            getNode(x + 1, y),
-                                            (y % 2 == 0) ? getNode(x + 1, y + 1) : getNode(x, y + 1)};
+            const Node *potentialNeighbours[6] = {(y % 2 == 0) ? getNode(x, y - 1) : getNode(x - 1, y - 1),
+                                                  getNode(x - 1, y),
+                                                  (y % 2 == 0) ? getNode(x, y + 1) : getNode(x - 1, y + 1),
+                                                  (y % 2 == 0) ? getNode(x + 1, y - 1) : getNode(x, y - 1),
+                                                  getNode(x + 1, y),
+                                                  (y % 2 == 0) ? getNode(x + 1, y + 1) : getNode(x, y + 1)};
 
             for (int i = 0; i < 6; i++)
             {
@@ -97,7 +95,7 @@ void Graph::generateEdges()
                 {
                     if (world->lineValidation(getNode(x, y)->getPosition(), potentialNeighbours[i]->getPosition()))
                     {
-                        getNode(x, y)->addNeighbour(potentialNeighbours[i]);
+                        unsafeGetNode(x, y)->addNeighbour(potentialNeighbours[i]);
                     }
                 }
             }
@@ -112,7 +110,7 @@ int Graph::getIndex(int x, int y) const
 
 /** Uses Dijkstra's algorithm to generate paths from all nodes to all nodes
  */
-void Graph::generateWeights()
+/* void Graph::generateWeights()
 {
     World *world = World::getInstance();
 
@@ -145,16 +143,17 @@ void Graph::generateWeights()
                 }
 
                 processed.push_back(current);
-                toSearch.erase(std::remove(toSearch.begin(), toSearch.end(), current), toSearch.end());
+                toSearch.erase(std::remove(toSearch.begin(), toSearch.end(),
+current), toSearch.end());
 
                 for (int i = 0; i < current->neighbourCount; i++)
                 {
                     Node *n = current->neighbours[i];
-                    bool inProcessed = std::find(processed.begin(), processed.end(), n) != processed.end();
-                    if (inProcessed)
-                        continue;
+                    bool inProcessed = std::find(processed.begin(),
+processed.end(), n) != processed.end(); if (inProcessed) continue;
 
-                    bool inSearch = std::find(toSearch.begin(), toSearch.end(), n) != toSearch.end();
+                    bool inSearch = std::find(toSearch.begin(), toSearch.end(),
+n) != toSearch.end();
 
                     float costToNeighbour = current->G + outerRadius * 2;
 
@@ -172,16 +171,21 @@ void Graph::generateWeights()
             }
         }
     }
-}
+}*/
 
-Node *Graph::getNode(int x, int y) const
+const Node *Graph::getNode(int x, int y) const
 {
     return (x >= 0 && x < resolutionX && y >= 0 && y < resolutionY) ? nodes[y * resolutionX + x] : nullptr;
 }
 
-Node *Graph::getBestNode(const Vector2 &P) const
+Node *Graph::unsafeGetNode(int x, int y)
 {
-    Node *bestNode = nullptr;
+    return (x >= 0 && x < resolutionX && y >= 0 && y < resolutionY) ? nodes[y * resolutionX + x] : nullptr;
+}
+
+const Node *Graph::getBestNode(const Vector2 &P) const
+{
+    const Node *bestNode = nullptr;
     float bestDistanceSqr = std::numeric_limits<float>::infinity();
 
     World *world = World::getInstance();
@@ -190,7 +194,7 @@ Node *Graph::getBestNode(const Vector2 &P) const
     {
         for (int y = 0; y < resolutionY; y++)
         {
-            Node *currentNode = getNode(x, y);
+            const Node *currentNode = getNode(x, y);
             if (Vector2DistanceSqr(currentNode->getPosition(), P) > bestDistanceSqr)
             {
                 continue;
@@ -220,7 +224,7 @@ Node *Graph::getBestNode(const Vector2 &P) const
     return bestNode;
 }
 
-void Graph::render()
+void Graph::render() const
 {
     return;
     for (int x = 0; x < resolutionX; x++)

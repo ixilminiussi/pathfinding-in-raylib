@@ -117,9 +117,9 @@ void Soldier::update(float dt)
     Vector2 worldIndexMax = world->getWorldAddress(Vector2Add(position, Vector2{obstacleRange, obstacleRange}));
 
     // iterate only through nearby walls
-    for (int x = (int)std::floor(worldIndexMin.x); x < (int)std::ceil(worldIndexMax.x); x++)
+    for (int x = (int)std::floor(worldIndexMin.x) - 1; x < (int)std::ceil(worldIndexMax.x) + 1; x++)
     {
-        for (int y = (int)std::floor(worldIndexMin.y); y < (int)std::ceil(worldIndexMax.y); y++)
+        for (int y = (int)std::floor(worldIndexMin.y) - 1; y < (int)std::ceil(worldIndexMax.y) + 1; y++)
         {
             if (world->getTileCategory(x, y) == TileCategory::WALL)
             {
@@ -145,6 +145,7 @@ void Soldier::update(float dt)
             if (GetTime() - lastTimeImmobile > 1.5)
             { // after being immobile for
               // long enough, lose your path
+                delete path;
                 path = nullptr;
             }
         }

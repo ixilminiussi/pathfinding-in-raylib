@@ -33,7 +33,7 @@ int main()
         }
         else
         {
-            game::DELTA = GetFrameTime();
+            game::DELTA = std::min(0.01f, GetFrameTime());
             if (world->updateFlag)
             {
                 graph->refresh();
