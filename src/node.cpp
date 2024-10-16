@@ -70,3 +70,30 @@ void Node::addNeighbour(const Node *node)
     neighbours[neighbourCount] = node;
     neighbourCount++;
 }
+
+void Node::setG(const float &newG)
+{
+    G = newG;
+    F = G + H;
+}
+
+void Node::setH(const float &newH)
+{
+    H = newH;
+    F = G + H;
+}
+
+const float &Node::getG() const
+{
+    return G;
+}
+
+const float &Node::getH() const
+{
+    return H;
+}
+
+const float &Node::getF() const
+{
+    return F;
+}

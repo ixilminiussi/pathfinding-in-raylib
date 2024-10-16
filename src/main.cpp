@@ -5,6 +5,7 @@
 #include "raylib.h"
 #include "soldier.h"
 #include "world.h"
+#include <future>
 
 int main()
 {

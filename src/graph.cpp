@@ -31,7 +31,7 @@ Graph::Graph()
 {
     resolutionX = game::GRAPH_RESOLUTION;
 
-    float width = screen::WIDTH / ((float)resolutionX - 1);
+    float width = (float)screen::WIDTH / ((float)resolutionX - 1.0f);
     float innerRadius = width / 2.0f;
     outerRadius = width / std::sqrt(3.0f);
 
@@ -79,9 +79,9 @@ void Graph::generateEdges()
 {
     World *world = World::getInstance();
 
-    for (int x = 0; x < resolutionX; x++)
+    for (int x = 0; x < resolutionX - 1; x++)
     {
-        for (int y = 0; y < resolutionY; y++)
+        for (int y = 0; y < resolutionY - 1; y++)
         {
             const Node *potentialNeighbours[6] = {(y % 2 == 0) ? getNode(x, y - 1) : getNode(x - 1, y - 1),
                                                   getNode(x - 1, y),
@@ -181,7 +181,7 @@ const Node *Graph::getNode(int x, int y) const
 
 Node *Graph::unsafeGetNode(int x, int y)
 {
-    return (x >= 0 && x < resolutionX && y >= 0 && y < resolutionY) ? nodes[y * resolutionX + x] : nullptr;
+    return (x >= 0 && x <= resolutionX && y >= 0 && y <= resolutionY) ? nodes[y * resolutionX + x] : nullptr;
 }
 
 const Node *Graph::getBestNode(const Vector2 &P) const
@@ -202,7 +202,7 @@ const Node *Graph::getBestNode(const Vector2 &P) const
             }
 
             float currentDistanceSqr;
-            if (world->lineValidation(currentNode->getPosition(), P))
+            if (world->lineValidation(currentNode->getPosition(), P, false))
             {
                 currentDistanceSqr = Vector2DistanceSqr(currentNode->getPosition(), P);
             }
@@ -227,6 +227,7 @@ const Node *Graph::getBestNode(const Vector2 &P) const
 
 void Graph::render() const
 {
+    return;
     for (int x = 0; x < resolutionX; x++)
     {
         for (int y = 0; y < resolutionY; y++)

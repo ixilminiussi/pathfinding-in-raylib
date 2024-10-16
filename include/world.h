@@ -16,7 +16,7 @@ class World
     void paintArea(const Vector2 &center, const float &radius, enum TileCategory category);
     Vector2 getWorldAddress(const Vector2 &P) const;
 
-    bool lineValidation(const Vector2 &A, const Vector2 &B) const;
+    bool lineValidation(const Vector2 &A, const Vector2 &B, bool narrow = false) const;
 
     enum TileCategory getTileCategory(int x, int y) const;
     void setTileCategory(int x, int y, TileCategory category);

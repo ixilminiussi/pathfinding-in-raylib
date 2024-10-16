@@ -35,7 +35,7 @@ class Soldier
     bool isSelected, isTravelling;
     int unitID;
 
-    Path *path;
+    const Path *path;
     double lastTimeImmobile;
 
     double timeEntered;

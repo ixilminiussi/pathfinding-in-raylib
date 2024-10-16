@@ -22,7 +22,13 @@ class Node
     const Vector2 &getPosition() const;
     void addNeighbour(const Node *node);
 
-    float G, H, F;
+    void setG(const float &newG);
+    void setH(const float &newH);
+
+    const float &getG() const;
+    const float &getH() const;
+    const float &getF() const;
+
     Node *connectionBackward;
     Node *connectionForward;
 
@@ -30,6 +36,7 @@ class Node
     int neighbourCount;
 
   private:
+    float G, H, F;
     Vector2 position;
     int x, y;
 };

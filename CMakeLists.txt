@@ -74,4 +74,3 @@ target_include_directories(${PROJECT_NAME} PRIVATE include ${RAYLIB_DIR} ${RAYLI
 
 # Link Raylib and additional libraries
 target_link_libraries(${PROJECT_NAME} raylib)
-

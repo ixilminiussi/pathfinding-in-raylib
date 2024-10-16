@@ -5,6 +5,7 @@
 #include "tile.h"
 #include "world.h"
 #include <algorithm>
+#include <future>
 #include <math.h>
 #include <raylib.h>
 #include <thread>
@@ -103,6 +104,7 @@ void Mouse::update(float dt)
             int numSoldiers = Soldier::selected.size();
 
             std::vector<std::thread> threads;
+            std::vector<std::future<void>> futures;
 
             // Sunflower seed algorithm for evenly distributed points in a
             // circle
@@ -114,12 +116,15 @@ void Mouse::update(float dt)
 
                 Vector2 goal = {GetMouseX() + r * cos(theta), GetMouseY() + r * sin(theta)};
 
-                threads.emplace_back(createTargetThread, Soldier::selected.at(n - 1), goal, unitID);
+                futures.push_back(
+                    std::async(std::launch::async, createTargetThread, Soldier::selected.at(n - 1), goal, unitID));
+                // threads.emplace_back(createTargetThread,
+                // Soldier::selected.at(n - 1), goal, unitID);
             }
 
-            for (auto &t : threads)
+            for (auto &f : futures)
             {
-                t.join();
+                f.get();
             }
         }
         break;

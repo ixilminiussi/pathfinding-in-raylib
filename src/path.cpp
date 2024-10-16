@@ -24,7 +24,7 @@ Path::Path(const Vector2 &A, const Vector2 &B) : segmentCount(0)
     }
 }
 
-Path *Path::newPath(const Vector2 &A, const Vector2 &B)
+const Path *Path::newPath(const Vector2 &A, const Vector2 &B)
 {
     Path *path = new Path(A, B);
 
@@ -37,7 +37,7 @@ Path *Path::newPath(const Vector2 &A, const Vector2 &B)
     return path;
 }
 
-void Path::render()
+void Path::render() const
 {
     Color yellow = ColorAlphaBlend(shoshone::maroon, shoshone::yellow, Color{150, 150, 150, 150});
 
@@ -53,15 +53,15 @@ void Path::render()
     }
 }
 
-Force Path::getDirectionFromNearby(const Vector2 &C)
+Force Path::getDirectionFromNearby(const Vector2 &C) const
 {
-    Segment *closestSegment;
+    const Segment *closestSegment;
     float closestDistanceSqr = std::numeric_limits<float>::max();
     Force closestPoint = {Vector2Zero(), Vector2Zero()};
 
     for (int i = 0; i < segmentCount; i++)
     {
-        Segment *currentSegment = getSegment(i);
+        const Segment *currentSegment = getSegment(i);
         Force currentClosestPoint = getProjectedPointOnSegment(*currentSegment, C);
         float currentDistanceSqr = Vector2DistanceSqr(currentClosestPoint.origin, C);
         if (currentDistanceSqr <= closestDistanceSqr)
@@ -77,6 +77,10 @@ Force Path::getDirectionFromNearby(const Vector2 &C)
 
 bool Path::aStarAlgorithm(const Vector2 &A, const Vector2 &B)
 {
+    bool pathFound = false;
+    float bestF = std::numeric_limits<float>::infinity();
+    Node *bestNode;
+
     Graph *graph = Graph::getInstance();
     World *world = World::getInstance();
 
@@ -89,18 +93,22 @@ bool Path::aStarAlgorithm(const Vector2 &A, const Vector2 &B)
 
     Node *nA = new Node(*nAP);
     // Initialize G, H, and F values for start and end nodes
-    float bigDistanceSqr = Vector2DistanceSqr(nA->getPosition(), nBP->getPosition());
-    nA->G = 0;
-    nA->H = nA->F = bigDistanceSqr;
+    nA->setG(0.0f);
+    nA->setH(Vector2Distance(nA->getPosition(), B));
 
     std::vector<Node *> toSearch = {nA};
     std::vector<Node *> processed;
 
+    // ============================
+    // MAIN LOOP
+    // ============================
     while (!toSearch.empty())
     {
+        // if we found a path, only stop searching once there is no potential
+        // better candidate left;
         // Find the node with the lowest F value
         Node *current = *std::min_element(toSearch.begin(), toSearch.end(), [](Node *a, Node *b) {
-            return (a->F < b->F) || (a->F == b->F && a->H < b->H);
+            return (a->getF() < b->getF()) || (a->getF() == b->getF() && a->getH() < b->getH());
         });
 
         processed.push_back(current);
@@ -111,7 +119,22 @@ bool Path::aStarAlgorithm(const Vector2 &A, const Vector2 &B)
         // this is the shortest path.
         if (world->lineValidation(current->getPosition(), B))
         {
-            Node *n = current;
+            pathFound = true;
+            if (current->getF() < bestF)
+            {
+                bestNode = current;
+                bestF = current->getF();
+            }
+        }
+
+        // if the best F found is still worst than the current best found Path,
+        // stop searching
+        // ============================
+        // Backpropagation through solution
+        // ============================
+        if (pathFound && bestF <= current->getF() && bestNode != current)
+        {
+            Node *n = bestNode;
 
             while (*n != *nA)
             {
@@ -160,7 +183,9 @@ bool Path::aStarAlgorithm(const Vector2 &A, const Vector2 &B)
             return true;
         }
 
+        // ============================
         // Process all neighbours
+        // ============================
         for (int i = 0; i < current->neighbourCount; i++)
         {
             Node *neighbour = new Node(*(current->neighbours[i]));
@@ -173,6 +198,7 @@ bool Path::aStarAlgorithm(const Vector2 &A, const Vector2 &B)
                 continue;
             }
 
+            // Changed to instance in search if node is already present
             auto it = std::find_if(toSearch.begin(), toSearch.end(), [neighbour](Node *n) { return *neighbour == *n; });
 
             if (it != toSearch.end())
@@ -181,24 +207,28 @@ bool Path::aStarAlgorithm(const Vector2 &A, const Vector2 &B)
                 neighbour = *(it);
             }
 
-            float costToNeighbour = current->G + graph->outerRadius * 2.0f;
+            // Calculate the current cost to said node from our current path
+            float costToNeighbour = current->getG() + graph->outerRadius * 2.0f;
+            neighbour->setH(Vector2Distance(neighbour->getPosition(), B));
+
+            if (costToNeighbour < neighbour->getG())
+            {
+                neighbour->setG(costToNeighbour);
+                neighbour->connectionBackward = current;
+            }
 
             // Update G, H, F values if not in search or found a better path
-            if (it == toSearch.end() || costToNeighbour < neighbour->G)
+            if (it == toSearch.end())
             {
-                neighbour->G = costToNeighbour;
-                neighbour->connectionBackward = current;
-
-                if (it == toSearch.end())
-                {
-                    neighbour->H = Vector2DistanceSqr(neighbour->getPosition(), nBP->getPosition());
-                    neighbour->F = neighbour->G + neighbour->H;
-                    toSearch.push_back(neighbour);
-                }
+                neighbour->setH(Vector2Distance(neighbour->getPosition(), nBP->getPosition()));
+                toSearch.push_back(neighbour);
             }
         }
     }
 
+    // ============================
+    // Delete node copies
+    // ============================
     for (Node *n : toSearch)
     {
         if (n != nullptr)
@@ -290,7 +320,7 @@ bool Path::straightSegmentAlgorithm(const Vector2 &A, const Vector2 &B)
     return false;
 }
 
-Force Path::getProjectedPointOnSegment(const Segment &segment, const Vector2 &P)
+Force Path::getProjectedPointOnSegment(const Segment &segment, const Vector2 &P) const
 {
     const Vector2 &A = segment.A;
     const Vector2 &B = segment.B;
@@ -323,7 +353,7 @@ Force Path::getProjectedPointOnSegment(const Segment &segment, const Vector2 &P)
     return {Vector2Add(A, Vector2Scale(Vector2Subtract(B, A), param)), direction};
 }
 
-Segment *Path::getSegment(int index)
+const Segment *Path::getSegment(int index) const
 {
     if (index < segmentCount)
     {

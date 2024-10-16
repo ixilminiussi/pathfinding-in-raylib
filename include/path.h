@@ -21,10 +21,10 @@ class Path
     Path(const Path &) = delete;
     Path operator=(const Path &) = delete;
 
-    static Path *newPath(const Vector2 &A, const Vector2 &B);
+    static const Path *newPath(const Vector2 &A, const Vector2 &B);
 
-    void render();
-    Force getDirectionFromNearby(const Vector2 &C);
+    void render() const;
+    Force getDirectionFromNearby(const Vector2 &C) const;
 
   private:
     Path() = delete;
@@ -40,9 +40,9 @@ class Path
      */
     // bool dijkstraAlgorithm(const Vector2 &A, const Vector2 &B);
 
-    Force getProjectedPointOnSegment(const Segment &segment, const Vector2 &P);
+    Force getProjectedPointOnSegment(const Segment &segment, const Vector2 &P) const;
 
-    Segment *getSegment(int index);
+    const Segment *getSegment(int index) const;
 
     // bool isCloseEnough(const Vector2 &A, const Vector2 &B);
 

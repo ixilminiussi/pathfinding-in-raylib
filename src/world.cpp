@@ -73,7 +73,7 @@ Vector2 World::getWorldAddress(const Vector2 &P) const
     return {std::floor(P.x / (float)game::TILE_SIZE), std::floor(P.y / (float)game::TILE_SIZE)};
 }
 
-bool World::lineValidation(const Vector2 &A, const Vector2 &B) const
+bool World::lineValidation(const Vector2 &A, const Vector2 &B, bool narrow) const
 {
     Vector2 Ap = getWorldAddress(A);
     Vector2 Bp = getWorldAddress(B);
@@ -96,10 +96,18 @@ bool World::lineValidation(const Vector2 &A, const Vector2 &B) const
         const Tile *tile = getTile(x1, y1);
         if (tile != nullptr)
         {
-            if (!tile->isNavigable())
+            if (narrow && !tile->isNavigable())
             {
                 return false;
             }
+            if (!narrow && tile->getTileCategory() == TileCategory::WALL)
+            {
+                return false;
+            }
+        }
+        else
+        {
+            return false;
         }
         if (x1 == x2 && y1 == y2)
         {
