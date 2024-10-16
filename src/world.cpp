@@ -109,7 +109,7 @@ bool World::lineValidation(const Vector2 &A, const Vector2 &B, bool narrow) cons
         {
             return false;
         }
-        if (x1 == x2 && y1 == y2)
+        if ((!narrow && std::abs(x1 - x2) <= 1 && std::abs(y1 - y2) <= 1) || (x1 == x2 && y1 == y2))
         {
             return true;
         }

@@ -12,6 +12,7 @@ class Soldier
     void select();
     void deselect();
     void target(const Vector2 &target, int unitID);
+    void forget();
 
     void update(float dt);
     void renderBelow() const;

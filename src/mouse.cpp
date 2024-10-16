@@ -5,6 +5,7 @@
 #include "tile.h"
 #include "world.h"
 #include <algorithm>
+#include <ctpl_stl.h>
 #include <future>
 #include <math.h>
 #include <raylib.h>
@@ -72,6 +73,10 @@ void Mouse::update(float dt)
         if (IsKeyPressed(KEY_TAB))
         {
             deselectAll();
+            for (Soldier *s : Soldier::army)
+            {
+                s->forget();
+            }
             mode = Mode::Editing;
         }
 
@@ -103,8 +108,11 @@ void Mouse::update(float dt)
             float scaleFactor = 12.0f; // Dynamically scale
             int numSoldiers = Soldier::selected.size();
 
-            std::vector<std::thread> threads;
-            std::vector<std::future<void>> futures;
+            // std::vector<std::thread> threads;
+            // std::vector<std::future<void>> futures;
+            int numThreads = std::thread::hardware_concurrency(); // Detect available
+                                                                  // hardware threads
+            ctpl::thread_pool pool(numThreads);
 
             // Sunflower seed algorithm for evenly distributed points in a
             // circle
@@ -116,16 +124,21 @@ void Mouse::update(float dt)
 
                 Vector2 goal = {GetMouseX() + r * cos(theta), GetMouseY() + r * sin(theta)};
 
-                futures.push_back(
-                    std::async(std::launch::async, createTargetThread, Soldier::selected.at(n - 1), goal, unitID));
+                pool.push([=](int id) { // The lambda function is the task for
+                                        // each thread
+                    createTargetThread(Soldier::selected.at(n - 1), goal, unitID);
+                });
+                //       futures.push_back(
+                //           std::async(std::launch::async, createTargetThread,
+                //           Soldier::selected.at(n - 1), goal, unitID));
                 // threads.emplace_back(createTargetThread,
                 // Soldier::selected.at(n - 1), goal, unitID);
             }
 
-            for (auto &f : futures)
-            {
-                f.get();
-            }
+            // for (auto &f : futures)
+            // {
+            //     f.get();
+            // }
         }
         break;
     }

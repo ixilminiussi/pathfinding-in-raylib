@@ -66,6 +66,16 @@ void Soldier::target(const Vector2 &target, int unitIDP)
     }
 }
 
+void Soldier::forget()
+{
+    if (path != nullptr)
+    {
+        isTravelling = false;
+        delete path;
+        path = nullptr;
+    }
+}
+
 void Soldier::update(float dt)
 {
     Vector2 impulse = {0.0f, 0.0f};
