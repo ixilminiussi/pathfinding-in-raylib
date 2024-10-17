@@ -5,7 +5,6 @@
 #include "raylib.h"
 #include "soldier.h"
 #include "world.h"
-#include <future>
 
 int main()
 {
@@ -37,6 +36,7 @@ int main()
             game::DELTA = std::min(0.01f, GetFrameTime());
             if (world->updateFlag)
             {
+                world->updateFlag = false;
                 graph->refresh();
                 graph = Graph::getInstance();
             }
@@ -78,6 +78,11 @@ int main()
         // Mouse selections
 
         EndDrawing();
+    }
+
+    for (Soldier *s : Soldier::army)
+    {
+        delete s;
     }
 
     CloseWindow();

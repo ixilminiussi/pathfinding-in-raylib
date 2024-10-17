@@ -1,6 +1,9 @@
 #pragma once
 #include "path.h"
 #include "raylib.h"
+#include <atomic>
+#include <condition_variable>
+#include <mutex>
 #include <vector>
 
 class Soldier
@@ -15,7 +18,7 @@ class Soldier
     void forget();
 
     void update(float dt);
-    void renderBelow() const;
+    void renderBelow();
     void renderAbove() const;
 
     // Vector2 *getObjective();
@@ -29,11 +32,15 @@ class Soldier
   private:
     bool isInWall() const;
 
-    Vector2 position;
-    Vector2 direction;
-
+    Vector2 position, direction;
     Vector2 objective;
     bool isSelected, isTravelling;
+
+    std::atomic<bool> targettingBusy{false}, mainlandBusy{false};
+    std::mutex mtx;
+
+    std::condition_variable cv;
+
     int unitID;
 
     const Path *path;

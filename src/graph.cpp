@@ -3,11 +3,9 @@
 #include "node.h"
 #include "raylib.h"
 #include "world.h"
-#include <algorithm>
 #include <cmath>
 #include <limits>
 #include <raymath.h>
-#include <vector>
 
 Graph *Graph::instance = nullptr;
 
@@ -104,6 +102,69 @@ void Graph::generateEdges()
     }
 }
 
+const Node *Graph::getNode(int x, int y) const
+{
+    return (x >= 0 && x < resolutionX && y >= 0 && y < resolutionY) ? nodes[y * resolutionX + x] : nullptr;
+}
+
+Node *Graph::unsafeGetNode(int x, int y)
+{
+    return (x >= 0 && x <= resolutionX && y >= 0 && y <= resolutionY) ? nodes[y * resolutionX + x] : nullptr;
+}
+
+const Node *Graph::getBestNode(const Vector2 &P) const
+{
+    const Node *bestNode = nullptr;
+    float bestDistanceSqr = std::numeric_limits<float>::infinity();
+
+    World *world = World::getInstance();
+
+    for (int x = 0; x < resolutionX; x++)
+    {
+        for (int y = 0; y < resolutionY; y++)
+        {
+            const Node *currentNode = getNode(x, y);
+            if (Vector2DistanceSqr(currentNode->getPosition(), P) > bestDistanceSqr)
+            {
+                continue;
+            }
+
+            float currentDistanceSqr;
+            if (world->lineValidation(currentNode->getPosition(), P, false))
+            {
+                currentDistanceSqr = Vector2DistanceSqr(currentNode->getPosition(), P);
+            }
+            else
+            {
+                currentDistanceSqr = std::numeric_limits<float>::infinity();
+            }
+            if (currentDistanceSqr < bestDistanceSqr)
+            {
+                bestNode = currentNode;
+            }
+
+            if (currentDistanceSqr <= outerRadius * outerRadius)
+            {
+                return bestNode;
+            }
+        }
+    }
+
+    return bestNode;
+}
+
+void Graph::render() const
+{
+    return;
+    for (int x = 0; x < resolutionX; x++)
+    {
+        for (int y = 0; y < resolutionY; y++)
+        {
+            nodes[y * resolutionX + x]->render();
+        }
+    }
+}
+
 int Graph::getIndex(int x, int y) const
 {
     return y * resolutionX + x;
@@ -173,66 +234,3 @@ n) != toSearch.end();
         }
     }
 }*/
-
-const Node *Graph::getNode(int x, int y) const
-{
-    return (x >= 0 && x < resolutionX && y >= 0 && y < resolutionY) ? nodes[y * resolutionX + x] : nullptr;
-}
-
-Node *Graph::unsafeGetNode(int x, int y)
-{
-    return (x >= 0 && x <= resolutionX && y >= 0 && y <= resolutionY) ? nodes[y * resolutionX + x] : nullptr;
-}
-
-const Node *Graph::getBestNode(const Vector2 &P) const
-{
-    const Node *bestNode = nullptr;
-    float bestDistanceSqr = std::numeric_limits<float>::infinity();
-
-    World *world = World::getInstance();
-
-    for (int x = 0; x < resolutionX; x++)
-    {
-        for (int y = 0; y < resolutionY; y++)
-        {
-            const Node *currentNode = getNode(x, y);
-            if (Vector2DistanceSqr(currentNode->getPosition(), P) > bestDistanceSqr)
-            {
-                continue;
-            }
-
-            float currentDistanceSqr;
-            if (world->lineValidation(currentNode->getPosition(), P, false))
-            {
-                currentDistanceSqr = Vector2DistanceSqr(currentNode->getPosition(), P);
-            }
-            else
-            {
-                currentDistanceSqr = std::numeric_limits<float>::infinity();
-            }
-            if (currentDistanceSqr < bestDistanceSqr)
-            {
-                bestNode = currentNode;
-            }
-
-            if (currentDistanceSqr <= outerRadius * outerRadius)
-            {
-                return bestNode;
-            }
-        }
-    }
-
-    return bestNode;
-}
-
-void Graph::render() const
-{
-    return;
-    for (int x = 0; x < resolutionX; x++)
-    {
-        for (int y = 0; y < resolutionY; y++)
-        {
-            nodes[y * resolutionX + x]->render();
-        }
-    }
-}

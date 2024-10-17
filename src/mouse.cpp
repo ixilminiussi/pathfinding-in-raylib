@@ -6,17 +6,15 @@
 #include "world.h"
 #include <algorithm>
 #include <ctpl_stl.h>
-#include <future>
 #include <math.h>
 #include <raylib.h>
-#include <thread>
 
 Mouse *Mouse::instance = nullptr;
 
 using namespace shoshone;
 Mouse::Mouse()
-    : fill({yellow.r, yellow.g, yellow.b, 100}), outline(yellow), mouseStart({0.0f, 0.0f}),
-      selectionArea({0.0f, 0.0f, 0.0f, 0.0f}), mode(Mode::Editing), editingRadius(50.0f), unitID(0)
+    : mode(Mode::Editing), fill({yellow.r, yellow.g, yellow.b, 100}), outline(yellow), editingRadius(50.0f),
+      mouseStart({0.0f, 0.0f}), selectionArea({0.0f, 0.0f, 0.0f, 0.0f}), unitID(0)
 {
 }
 
@@ -31,7 +29,7 @@ Mouse *Mouse::getInstance()
 
 const float GOLDEN_ANGLE = 137.5f * M_PI / 180.0f;
 
-void createTargetThread(Soldier *s, const Vector2 &goal, int unitID)
+void createTargetThread(Soldier *s, Vector2 goal, int unitID)
 {
     s->target(goal, unitID);
 }
@@ -102,17 +100,11 @@ void Mouse::update(float dt)
             }
         }
 
-        if (IsMouseButtonDown(MOUSE_BUTTON_RIGHT))
+        if (IsMouseButtonPressed(MOUSE_BUTTON_RIGHT))
         {
             unitID++;
             float scaleFactor = 12.0f; // Dynamically scale
             int numSoldiers = Soldier::selected.size();
-
-            // std::vector<std::thread> threads;
-            // std::vector<std::future<void>> futures;
-            int numThreads = std::thread::hardware_concurrency(); // Detect available
-                                                                  // hardware threads
-            ctpl::thread_pool pool(numThreads);
 
             // Sunflower seed algorithm for evenly distributed points in a
             // circle
@@ -124,21 +116,11 @@ void Mouse::update(float dt)
 
                 Vector2 goal = {GetMouseX() + r * cos(theta), GetMouseY() + r * sin(theta)};
 
-                pool.push([=](int id) { // The lambda function is the task for
-                                        // each thread
+                game::pool.push([n, goal, this](int id) { // The lambda function is
+                                                          // the task for each thread
                     createTargetThread(Soldier::selected.at(n - 1), goal, unitID);
                 });
-                //       futures.push_back(
-                //           std::async(std::launch::async, createTargetThread,
-                //           Soldier::selected.at(n - 1), goal, unitID));
-                // threads.emplace_back(createTargetThread,
-                // Soldier::selected.at(n - 1), goal, unitID);
             }
-
-            // for (auto &f : futures)
-            // {
-            //     f.get();
-            // }
         }
         break;
     }

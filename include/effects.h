@@ -21,7 +21,7 @@ class Effect
     Color color;
 };
 
-class CircleWave : public Effect
+class CircleWave final : public Effect
 {
   public:
     CircleWave() = default;

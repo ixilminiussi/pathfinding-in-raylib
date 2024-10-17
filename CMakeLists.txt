@@ -61,7 +61,7 @@ if(CMAKE_SYSTEM_PROCESSOR MATCHES "x86_64")
 endif()
 
 # Debug Configuration
-set(CMAKE_CXX_FLAGS_DEBUG "-g -fsanitize=address -fno-omit-frame-pointer")
+set(CMAKE_CXX_FLAGS_DEBUG "-g -fsanitize=address")
 set(CMAKE_EXE_LINKER_FLAGS_DEBUG "-fsanitize=address")
 target_compile_definitions(${PROJECT_NAME} PRIVATE _DEBUG)
 

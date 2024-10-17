@@ -4,7 +4,7 @@
 #include "world.h"
 
 Tile::Tile(const Rectangle &rectangle, int x, int y, TileCategory category)
-    : rectangle(rectangle), category(category), position(Position::OTHER), ix(x), iy(y), navigable(true)
+    : category(category), position(Position::OTHER), ix(x), iy(y), rectangle(rectangle), navigable(true)
 {
 }
 

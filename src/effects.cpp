@@ -1,5 +1,4 @@
 #include "effects.h"
-#include "namespaces.h"
 #include "raylib.h"
 #include <algorithm>
 #include <raymath.h>

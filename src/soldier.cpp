@@ -22,7 +22,7 @@ float Soldier::steeringDelta = 5.0f;
 float Soldier::walkingSpeed = 200.0f;
 
 Soldier::Soldier(const Vector2 &position)
-    : position(position), direction(), isSelected(false), isTravelling(false), path(nullptr), objective({0.0f, 0.0f}),
+    : position(position), direction(), objective({0.0f, 0.0f}), isSelected(false), isTravelling(false), path(nullptr),
       lastTimeImmobile(0.0f)
 {
     army.push_back(this);
@@ -30,7 +30,10 @@ Soldier::Soldier(const Vector2 &position)
 
 Soldier::~Soldier()
 {
-    army.erase(std::remove(army.begin(), army.end(), this), army.end());
+    if (path != nullptr)
+    {
+        delete path;
+    }
 }
 
 void Soldier::select()
@@ -52,11 +55,13 @@ const Vector2 &Soldier::getPosition() const
 
 void Soldier::target(const Vector2 &target, int unitIDP)
 {
-    if (path != nullptr)
-    {
-        isTravelling = false;
-        delete path;
-    }
+    // Wait until both functions are not busy
+    std::unique_lock<std::mutex> lock(mtx);
+    targettingBusy.store(true);
+
+    cv.wait(lock, [this] { return !mainlandBusy.load(); });
+
+    forget();
     path = Path::newPath(position, target);
     if (path != nullptr)
     {
@@ -64,6 +69,8 @@ void Soldier::target(const Vector2 &target, int unitIDP)
         isTravelling = true;
         unitID = unitIDP;
     }
+
+    targettingBusy.store(false);
 }
 
 void Soldier::forget()
@@ -78,9 +85,19 @@ void Soldier::forget()
 
 void Soldier::update(float dt)
 {
+    if (targettingBusy.load())
+    {
+        return;
+    }
+
+    // Lock the mainland until further notice
+    {
+        std::lock_guard<std::mutex> lock(mtx);
+        mainlandBusy.store(true);
+    }
+
     Vector2 impulse = {0.0f, 0.0f};
     Force V;
-    float ratio;
 
     // follow path
     if ((path != nullptr) && isTravelling && (Vector2DistanceSqr(objective, position) > 4000.0f))
@@ -185,6 +202,10 @@ void Soldier::update(float dt)
             position = Vector2({(float)GetRandomValue(10, screen::WIDTH), (float)GetRandomValue(10, screen::HEIGHT)});
         }
     }
+
+    // unlock the mainland to potential intruders
+    mainlandBusy.store(false);
+    cv.notify_all(); // Notify any waiting threads
 }
 
 bool Soldier::isInWall() const
@@ -195,12 +216,26 @@ bool Soldier::isInWall() const
     return world->getTileCategory((int)coords.x, (int)coords.y) == TileCategory::WALL;
 }
 
-void Soldier::renderBelow() const
+void Soldier::renderBelow()
 {
-    if (path != nullptr)
+    if (targettingBusy.load())
+    {
+        return;
+    }
+    // Lock the mainland until further notice
+    {
+        std::lock_guard<std::mutex> lock(mtx);
+        mainlandBusy.store(true);
+    }
+
+    if (isTravelling && path != nullptr)
     {
         path->render();
     }
+
+    // unlock the mainland to potential intruders
+    mainlandBusy.store(false);
+    cv.notify_all(); // Notify any waiting threads
 }
 
 void Soldier::renderAbove() const

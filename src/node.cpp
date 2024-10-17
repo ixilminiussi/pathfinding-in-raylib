@@ -2,7 +2,7 @@
 #include <limits>
 #include <string>
 
-Node::Node(const Vector2 &position, int x, int y) : position(position), x(x), y(y), neighbourCount(0), G(0), H(0), F(0)
+Node::Node(const Vector2 &position, int x, int y) : neighbourCount(0), G(0), H(0), F(0), position(position), x(x), y(y)
 {
 }
 

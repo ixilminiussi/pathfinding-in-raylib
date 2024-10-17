@@ -1,4 +1,5 @@
 #pragma once
+#include "ctpl_stl.h"
 #include "raylib.h"
 
 namespace screen
@@ -16,6 +17,8 @@ extern const int TILE_SIZE;
 extern const int WIDTH;
 extern const int HEIGHT;
 extern const int GRAPH_RESOLUTION;
+extern const int numThreads;
+extern ctpl::thread_pool pool;
 } // namespace game
 
 namespace shoshone

@@ -1,5 +1,4 @@
 #include "path.h"
-#include "effects.h"
 #include "graph.h"
 #include "namespaces.h"
 #include "node.h"
@@ -28,7 +27,7 @@ const Path *Path::newPath(const Vector2 &A, const Vector2 &B)
 {
     Path *path = new Path(A, B);
 
-    if (path->segmentCount == 0)
+    if (path->segmentCount <= 0)
     {
         delete path;
         return nullptr;
@@ -55,7 +54,6 @@ void Path::render() const
 
 Force Path::getDirectionFromNearby(const Vector2 &C) const
 {
-    const Segment *closestSegment;
     float closestDistanceSqr = std::numeric_limits<float>::max();
     Force closestPoint = {Vector2Zero(), Vector2Zero()};
 
@@ -66,7 +64,6 @@ Force Path::getDirectionFromNearby(const Vector2 &C) const
         float currentDistanceSqr = Vector2DistanceSqr(currentClosestPoint.origin, C);
         if (currentDistanceSqr <= closestDistanceSqr)
         {
-            closestSegment = currentSegment;
             closestDistanceSqr = currentDistanceSqr;
             closestPoint = currentClosestPoint;
         }
