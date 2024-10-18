@@ -172,3 +172,11 @@ const Tile *World::getTile(int x, int y) const
 
     return tiles[y * game::WIDTH + x];
 }
+
+void World::setNavigable(int x, int y, bool state)
+{
+    if ((x < 0) || (x >= game::WIDTH) || (y < 0) || (y >= game::HEIGHT))
+        return;
+
+    tiles[y * game::WIDTH + x]->setNavigable(state);
+}

@@ -33,7 +33,7 @@ Graph::Graph()
     float innerRadius = width / 2.0f;
     outerRadius = width / std::sqrt(3.0f);
 
-    // FIX: incorrect, leads to overflowing grid
+    // FIX: incorrect, leads to overflowing grid (but not really)
     resolutionY = std::floor(screen::HEIGHT / (1.5f * innerRadius));
 
     typedef Node *NodeP;
@@ -124,28 +124,22 @@ const Node *Graph::getBestNode(const Vector2 &P) const
         for (int y = 0; y < resolutionY; y++)
         {
             const Node *currentNode = getNode(x, y);
-            if (Vector2DistanceSqr(currentNode->getPosition(), P) > bestDistanceSqr)
+            if (Vector2DistanceSqr(currentNode->getPosition(), P) >
+                std::min(2.0f * (outerRadius * outerRadius), bestDistanceSqr))
             {
                 continue;
             }
 
-            float currentDistanceSqr;
-            if (world->lineValidation(currentNode->getPosition(), P, false))
-            {
-                currentDistanceSqr = Vector2DistanceSqr(currentNode->getPosition(), P);
-            }
-            else
-            {
-                currentDistanceSqr = std::numeric_limits<float>::infinity();
-            }
-            if (currentDistanceSqr < bestDistanceSqr)
+            float currentDistanceSqr =
+                (world->lineValidation(currentNode->getPosition(), P, false))
+                    ? Vector2DistanceSqr(currentNode->getPosition(), P)
+                    : std::numeric_limits<float>::max(); // (just an inch lower than infinity, so will
+                                                         // still pass unless there is another node
+                                                         // within the range but with a valid line)
+            if (currentDistanceSqr <= bestDistanceSqr)
             {
                 bestNode = currentNode;
-            }
-
-            if (currentDistanceSqr <= outerRadius * outerRadius)
-            {
-                return bestNode;
+                bestDistanceSqr = currentDistanceSqr;
             }
         }
     }

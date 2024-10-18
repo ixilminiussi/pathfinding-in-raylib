@@ -28,6 +28,7 @@ class Tile
     TileCategory getTileCategory() const;
     const Rectangle &getRectangle() const;
     bool isNavigable() const;
+    void setNavigable(bool state);
 
   private:
     TileCategory category;

@@ -7,9 +7,10 @@
 #include "world.h"
 #include <algorithm>
 #include <math.h>
+#include <memory>
 
-std::vector<Soldier *> Soldier::army = std::vector<Soldier *>();
-std::vector<Soldier *> Soldier::selected = std::vector<Soldier *>();
+std::vector<std::shared_ptr<Soldier>> Soldier::army = std::vector<std::shared_ptr<Soldier>>();
+std::vector<std::shared_ptr<Soldier>> Soldier::selected = std::vector<std::shared_ptr<Soldier>>();
 
 float Soldier::radius = 8.0f;
 float Soldier::separationRangeSqr = (Soldier::radius + 9.0f) * (Soldier::radius + 9.0f);
@@ -25,27 +26,27 @@ Soldier::Soldier(const Vector2 &position)
     : position(position), direction(), objective({0.0f, 0.0f}), isSelected(false), isTravelling(false), path(nullptr),
       lastTimeImmobile(0.0f)
 {
-    army.push_back(this);
 }
 
-Soldier::~Soldier()
+std::shared_ptr<Soldier> Soldier::newSoldier(const Vector2 &position)
 {
-    if (path != nullptr)
-    {
-        delete path;
-    }
+    std::shared_ptr<Soldier> soldier = std::shared_ptr<Soldier>(new Soldier(position));
+    Soldier::army.push_back(soldier);
+    return soldier;
 }
 
 void Soldier::select()
 {
     isSelected = true;
-    selected.push_back(this);
+    selected.push_back(shared_from_this());
 }
 
 void Soldier::deselect()
 {
     isSelected = false;
-    selected.erase(std::remove(selected.begin(), selected.end(), this), selected.end());
+    auto it = std::remove_if(selected.begin(), selected.end(),
+                             [this](const std::shared_ptr<Soldier> &soldier) { return soldier.get() == this; });
+    selected.erase(it, selected.end());
 }
 
 const Vector2 &Soldier::getPosition() const
@@ -62,12 +63,17 @@ void Soldier::target(const Vector2 &target, int unitIDP)
     cv.wait(lock, [this] { return !mainlandBusy.load(); });
 
     forget();
+
     path = Path::newPath(position, target);
-    if (path != nullptr)
+    if (path->isValid())
     {
         objective = target;
         isTravelling = true;
         unitID = unitIDP;
+    }
+    else
+    {
+        forget();
     }
 
     targettingBusy.store(false);
@@ -75,12 +81,8 @@ void Soldier::target(const Vector2 &target, int unitIDP)
 
 void Soldier::forget()
 {
-    if (path != nullptr)
-    {
-        isTravelling = false;
-        delete path;
-        path = nullptr;
-    }
+    isTravelling = false;
+    path.reset();
 }
 
 void Soldier::update(float dt)
@@ -100,7 +102,7 @@ void Soldier::update(float dt)
     Force V;
 
     // follow path
-    if ((path != nullptr) && isTravelling && (Vector2DistanceSqr(objective, position) > 4000.0f))
+    if (isTravelling && (Vector2DistanceSqr(objective, position) > 4000.0f))
     {
         V = path->getDirectionFromNearby(position);
 
@@ -122,7 +124,7 @@ void Soldier::update(float dt)
         }
     }
 
-    for (Soldier *s : army)
+    for (std::shared_ptr<Soldier> s : army)
     {
         if (!((!isTravelling || !s->isTravelling) && s->unitID == unitID) || (s->isTravelling && s->unitID != unitID) ||
             (isTravelling && s->isTravelling))
@@ -161,6 +163,8 @@ void Soldier::update(float dt)
         }
     }
 
+    // if we are on the path but haven't moved for a while (presumibly we
+    // arrived at our destination) forget the path and stop travelling
     if (path != nullptr)
     {
         if (!Vector2Equals(impulse, Vector2Zero()))
@@ -170,10 +174,8 @@ void Soldier::update(float dt)
         else
         {
             if (GetTime() - lastTimeImmobile > 1.5)
-            { // after being immobile for
-              // long enough, lose your path
-                delete path;
-                path = nullptr;
+            {
+                forget();
             }
         }
     }

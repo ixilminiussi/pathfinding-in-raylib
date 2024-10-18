@@ -14,7 +14,8 @@ int main()
 
     for (int i = 0; i < game::SOLDIER_COUNT; i++)
     {
-        new Soldier({(float)GetRandomValue(10, screen::WIDTH - 10), (float)GetRandomValue(10, screen::HEIGHT - 10)});
+        Soldier::newSoldier(
+            {(float)GetRandomValue(10, screen::WIDTH - 10), (float)GetRandomValue(10, screen::HEIGHT - 10)});
     }
 
     Mouse *mouse = Mouse::getInstance();
@@ -44,7 +45,7 @@ int main()
 
         graph->render();
 
-        for (Soldier *s : Soldier::army)
+        for (std::shared_ptr<Soldier> s : Soldier::army)
         {
             s->update(game::DELTA);
             s->renderBelow();
@@ -53,7 +54,7 @@ int main()
         mouse->update(game::DELTA);
         mouse->renderBelow();
 
-        for (Soldier *s : Soldier::army)
+        for (std::shared_ptr<Soldier> s : Soldier::army)
         {
             s->renderAbove();
 
@@ -69,20 +70,9 @@ int main()
         world->render();
         mouse->renderTop();
 
-        for (Effect *e : Effect::effects)
-        {
-            e->update(game::DELTA);
-            e->render();
-        }
-
-        // Mouse selections
+        Effect::iterate();
 
         EndDrawing();
-    }
-
-    for (Soldier *s : Soldier::army)
-    {
-        delete s;
     }
 
     CloseWindow();

@@ -20,6 +20,7 @@ class World
 
     enum TileCategory getTileCategory(int x, int y) const;
     void setTileCategory(int x, int y, TileCategory category);
+    void setNavigable(int x, int y, bool state);
 
     const Tile *getTile(int x, int y) const;
 

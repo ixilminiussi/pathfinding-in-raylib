@@ -7,7 +7,7 @@ enum Mode
     Playing
 };
 
-class Mouse
+class Mouse final
 {
   public:
     Mouse(const Mouse &) = delete;

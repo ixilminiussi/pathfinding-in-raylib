@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <ctpl_stl.h>
 #include <math.h>
+#include <memory>
 #include <raylib.h>
 
 Mouse *Mouse::instance = nullptr;
@@ -29,7 +30,7 @@ Mouse *Mouse::getInstance()
 
 const float GOLDEN_ANGLE = 137.5f * M_PI / 180.0f;
 
-void createTargetThread(Soldier *s, Vector2 goal, int unitID)
+void createTargetThread(std::shared_ptr<Soldier> s, Vector2 goal, int unitID)
 {
     s->target(goal, unitID);
 }
@@ -71,7 +72,7 @@ void Mouse::update(float dt)
         if (IsKeyPressed(KEY_TAB))
         {
             deselectAll();
-            for (Soldier *s : Soldier::army)
+            for (std::shared_ptr<Soldier> s : Soldier::army)
             {
                 s->forget();
             }
@@ -106,6 +107,8 @@ void Mouse::update(float dt)
             float scaleFactor = 12.0f; // Dynamically scale
             int numSoldiers = Soldier::selected.size();
 
+            std::vector<std::future<void>> futures;
+
             // Sunflower seed algorithm for evenly distributed points in a
             // circle
             for (int n = 1; n <= numSoldiers; n++) // Start from 1 to avoid clustering at the center
@@ -116,10 +119,10 @@ void Mouse::update(float dt)
 
                 Vector2 goal = {GetMouseX() + r * cos(theta), GetMouseY() + r * sin(theta)};
 
-                game::pool.push([n, goal, this](int id) { // The lambda function is
-                                                          // the task for each thread
+                futures.push_back(game::pool.push([n, goal, this](int id) { // The lambda function is
+                                                                            // the task for each thread
                     createTargetThread(Soldier::selected.at(n - 1), goal, unitID);
-                });
+                }));
             }
         }
         break;
@@ -190,10 +193,10 @@ void Mouse::renderBelow()
             DrawRectangleLinesEx(selectionArea, 3.0f, outline);
         }
 
-        if (IsMouseButtonReleased(MOUSE_BUTTON_RIGHT))
+        if (IsMouseButtonPressed(MOUSE_BUTTON_RIGHT))
         {
-            new CircleWave(GetMousePosition(), 5.0f, 30.0f, fill);
-            new CircleWave(GetMousePosition(), 2.5f, 15.0f, outline);
+            CircleWave::newEffect(GetMousePosition(), 5.0f, 30.0f, fill);
+            CircleWave::newEffect(GetMousePosition(), 2.5f, 15.0f, outline);
         }
         break;
     }
@@ -201,7 +204,7 @@ void Mouse::renderBelow()
 
 void Mouse::deselectAll() const
 {
-    for (Soldier *s : Soldier::army)
+    for (std::shared_ptr<Soldier> s : Soldier::army)
     {
         s->deselect();
     }

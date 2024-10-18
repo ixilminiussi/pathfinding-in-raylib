@@ -8,6 +8,7 @@
 #include <algorithm>
 #include <cmath>
 #include <limits>
+#include <memory>
 #include <vector>
 
 // std::vector<Path *> Path::bakedPaths = std::vector<Path *>();
@@ -23,16 +24,9 @@ Path::Path(const Vector2 &A, const Vector2 &B) : segmentCount(0)
     }
 }
 
-const Path *Path::newPath(const Vector2 &A, const Vector2 &B)
+std::unique_ptr<Path> Path::newPath(const Vector2 &A, const Vector2 &B)
 {
-    Path *path = new Path(A, B);
-
-    if (path->segmentCount <= 0)
-    {
-        delete path;
-        return nullptr;
-    }
-
+    std::unique_ptr<Path> path = std::unique_ptr<Path>(new Path(A, B));
     return path;
 }
 
@@ -42,14 +36,19 @@ void Path::render() const
 
     for (int i = 0; i < segmentCount; i++)
     {
-        DrawLineEx(getSegment(i)->A, getSegment(i)->B, 3.0f, {yellow.r, yellow.g, yellow.b, 100});
+        DrawLineEx(getSegment(i).A, getSegment(i).B, 3.0f, {yellow.r, yellow.g, yellow.b, 100});
 
-        DrawCircleV(getSegment(i)->A, 4.0f, yellow);
+        DrawCircleV(getSegment(i).A, 4.0f, yellow);
         if (i == segmentCount - 1)
         {
-            DrawCircleV(getSegment(i)->B, 6.0f, yellow);
+            DrawCircleV(getSegment(i).B, 6.0f, yellow);
         }
     }
+}
+
+bool Path::isValid()
+{
+    return segmentCount > 0;
 }
 
 Force Path::getDirectionFromNearby(const Vector2 &C) const
@@ -59,8 +58,8 @@ Force Path::getDirectionFromNearby(const Vector2 &C) const
 
     for (int i = 0; i < segmentCount; i++)
     {
-        const Segment *currentSegment = getSegment(i);
-        Force currentClosestPoint = getProjectedPointOnSegment(*currentSegment, C);
+        const Segment &currentSegment = getSegment(i);
+        Force currentClosestPoint = getProjectedPointOnSegment(currentSegment, C);
         float currentDistanceSqr = Vector2DistanceSqr(currentClosestPoint.origin, C);
         if (currentDistanceSqr <= closestDistanceSqr)
         {
@@ -133,10 +132,13 @@ bool Path::aStarAlgorithm(const Vector2 &A, const Vector2 &B)
         {
             Node *n = bestNode;
 
-            while (*n != *nA)
+            while (true)
             {
                 if (world->lineValidation(n->getPosition(), A))
+                {
+                    addSegment({A, n->getPosition()});
                     break;
+                }
 
                 Node *nSkip = n;
                 while (*nSkip != *nA &&
@@ -148,20 +150,14 @@ bool Path::aStarAlgorithm(const Vector2 &A, const Vector2 &B)
                 }
 
                 n = n->connectionBackward;
-                segmentCount++;
             }
 
-            // Create path segments
-            segments[0] = {A, n->getPosition(), 1};
-
-            for (int i = 1; i <= segmentCount; i++)
+            while (n != bestNode)
             {
-                segments[i] = {n->getPosition(), n->connectionForward->getPosition(), i + 1};
+                addSegment({n->getPosition(), n->connectionForward->getPosition()});
                 n = n->connectionForward;
             }
-
-            segments[segmentCount + 1] = {n->getPosition(), B, segmentCount + 2};
-            segmentCount += 2;
+            addSegment({bestNode->getPosition(), B});
 
             for (Node *n : toSearch)
             {
@@ -310,8 +306,7 @@ bool Path::straightSegmentAlgorithm(const Vector2 &A, const Vector2 &B)
 {
     if (World::getInstance()->lineValidation(A, B))
     {
-        segmentCount = 1;
-        segments[0] = {A, B, 1};
+        addSegment({A, B, 1});
         return true;
     }
     return false;
@@ -344,21 +339,36 @@ Force Path::getProjectedPointOnSegment(const Segment &segment, const Vector2 &P)
         }
         else
         {
-            return getProjectedPointOnSegment(*getSegment(segment.index + 1), P);
+            return getProjectedPointOnSegment(getSegment(segment.index + 1), P);
         }
     }
     return {Vector2Add(A, Vector2Scale(Vector2Subtract(B, A), param)), direction};
 }
 
-const Segment *Path::getSegment(int index) const
+const Segment &Path::getSegment(int index) const
 {
-    if (index < segmentCount)
+    if (index < sizeof(segments) / sizeof(Segment))
     {
-        return &segments[index];
+        return segments[index];
     }
     else
     {
-        return &segments[index]; // TODO: make it retrieve from vector when
-                                 // segment
+        return furtherSegments.at(index - (sizeof(segments) / sizeof(Segment))); // TODO: make it retrieve from vector
     }
+}
+
+void Path::addSegment(Segment segment)
+{
+    segment.index = segmentCount;
+
+    if (segmentCount >= sizeof(segments) / sizeof(Segment))
+    {
+        furtherSegments.push_back(segment);
+    }
+    else
+    {
+        segments[segmentCount] = segment;
+    }
+
+    segmentCount++;
 }

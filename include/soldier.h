@@ -3,14 +3,15 @@
 #include "raylib.h"
 #include <atomic>
 #include <condition_variable>
+#include <memory>
 #include <mutex>
 #include <vector>
 
-class Soldier
+class Soldier : public std::enable_shared_from_this<Soldier>
 {
   public:
-    Soldier(const Vector2 &position);
-    ~Soldier();
+    static std::shared_ptr<Soldier> newSoldier(const Vector2 &position);
+    ~Soldier() = default;
 
     void select();
     void deselect();
@@ -21,15 +22,15 @@ class Soldier
     void renderBelow();
     void renderAbove() const;
 
-    // Vector2 *getObjective();
     const Vector2 &getPosition() const;
 
-    static std::vector<Soldier *> army;
-    static std::vector<Soldier *> selected;
+    static std::vector<std::shared_ptr<Soldier>> army;
+    static std::vector<std::shared_ptr<Soldier>> selected;
 
     static float radius;
 
   private:
+    Soldier(const Vector2 &position);
     bool isInWall() const;
 
     Vector2 position, direction;
@@ -43,7 +44,7 @@ class Soldier
 
     int unitID;
 
-    const Path *path;
+    std::unique_ptr<Path> path;
     double lastTimeImmobile;
 
     double timeEntered;

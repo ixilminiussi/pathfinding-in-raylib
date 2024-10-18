@@ -1,5 +1,7 @@
 #pragma once
 #include "raylib.h"
+#include <memory>
+#include <vector>
 
 struct Segment
 {
@@ -21,10 +23,11 @@ class Path
     Path(const Path &) = delete;
     Path operator=(const Path &) = delete;
 
-    static const Path *newPath(const Vector2 &A, const Vector2 &B);
+    static std::unique_ptr<Path> newPath(const Vector2 &A, const Vector2 &B);
 
     void render() const;
     Force getDirectionFromNearby(const Vector2 &C) const;
+    bool isValid();
 
   private:
     Path() = delete;
@@ -42,13 +45,15 @@ class Path
 
     Force getProjectedPointOnSegment(const Segment &segment, const Vector2 &P) const;
 
-    const Segment *getSegment(int index) const;
+    const Segment &getSegment(int index) const;
+    void addSegment(Segment segment);
 
     // bool isCloseEnough(const Vector2 &A, const Vector2 &B);
 
     Vector2 start;
     Vector2 end;
 
-    Segment segments[100];
+    Segment segments[10];
+    std::vector<Segment> furtherSegments = std::vector<Segment>();
     int segmentCount;
 };
