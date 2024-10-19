@@ -7,7 +7,7 @@ enum TileCategory
     FLOOR
 };
 
-enum Position
+enum Placement
 {
     TOP_LEFT,
     TOP_RIGHT,
@@ -22,17 +22,24 @@ class Tile
     Tile(const Rectangle &rectangle, int x, int y, TileCategory category = TileCategory::FLOOR);
     ~Tile() = default;
 
+    /**
+     * @brief draws tile on screen
+     */
     void render() const;
-    void updatePosition();
-    void setTileCategory(TileCategory category);
+    /**
+     * @brief updates the placement of tile relative to its neighbours
+     */
+    void updatePlacement();
+
+    void setNavigable(bool state);
+    void setTileCategory(TileCategory category); //@brief updates the placement
+    bool isNavigable() const;
     TileCategory getTileCategory() const;
     const Rectangle &getRectangle() const;
-    bool isNavigable() const;
-    void setNavigable(bool state);
 
   private:
     TileCategory category;
-    Position position;
+    Placement placement;
     int ix, iy;
     Rectangle rectangle;
     bool navigable;

@@ -1,4 +1,6 @@
 #include "node.h"
+#include "tile.h"
+#include "world.h"
 #include <limits>
 #include <string>
 
@@ -83,6 +85,16 @@ void Node::setH(const float &newH)
     F = G + H;
 }
 
+void Node::setConnectionBackward(Node *node)
+{
+    connectionBackward = node;
+}
+
+void Node::setConnectionForward(Node *node)
+{
+    connectionForward = node;
+}
+
 const float &Node::getG() const
 {
     return G;
@@ -96,4 +108,31 @@ const float &Node::getH() const
 const float &Node::getF() const
 {
     return F;
+}
+
+const Node *Node::getNeighbour(int index) const
+{
+    return neighbours[index];
+}
+
+int Node::getNeighbourCount() const
+{
+    return neighbourCount;
+}
+
+Node *Node::getConnectionBackward()
+{
+    return connectionBackward;
+}
+
+Node *Node::getConnectionForward()
+{
+    return connectionForward;
+}
+
+bool Node::inWall() const
+{
+    World *world = World::getInstance();
+    Vector2 coords = world->getWorldAddress(position);
+    return world->getTileCategory((int)coords.x, (int)coords.y) == TileCategory::WALL;
 }

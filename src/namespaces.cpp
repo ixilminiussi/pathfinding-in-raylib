@@ -14,7 +14,7 @@ const bool FULL_SCREEN = true;
 namespace game
 {
 int SOLDIER_COUNT = 200;
-const int TILE_SIZE = 7;
+const int TILE_SIZE = 5;
 float DELTA;
 const int WIDTH = screen::WIDTH / TILE_SIZE;
 const int HEIGHT = screen::HEIGHT / TILE_SIZE;

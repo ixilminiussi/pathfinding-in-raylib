@@ -142,20 +142,20 @@ bool Path::aStarAlgorithm(const Vector2 &A, const Vector2 &B)
 
                 Node *nSkip = n;
                 while (*nSkip != *nA &&
-                       world->lineValidation(nSkip->connectionBackward->getPosition(), n->getPosition()))
+                       world->lineValidation(nSkip->getConnectionBackward()->getPosition(), n->getPosition()))
                 {
-                    nSkip = nSkip->connectionBackward;
-                    n->connectionBackward = nSkip;
-                    nSkip->connectionForward = n;
+                    nSkip = nSkip->getConnectionBackward();
+                    n->setConnectionBackward(nSkip);
+                    nSkip->setConnectionForward(n);
                 }
 
-                n = n->connectionBackward;
+                n = n->getConnectionBackward();
             }
 
             while (n != bestNode)
             {
-                addSegment({n->getPosition(), n->connectionForward->getPosition()});
-                n = n->connectionForward;
+                addSegment({n->getPosition(), n->getConnectionForward()->getPosition()});
+                n = n->getConnectionForward();
             }
             addSegment({bestNode->getPosition(), B});
 
@@ -179,9 +179,9 @@ bool Path::aStarAlgorithm(const Vector2 &A, const Vector2 &B)
         // ============================
         // Process all neighbours
         // ============================
-        for (int i = 0; i < current->neighbourCount; i++)
+        for (int i = 0; i < current->getNeighbourCount(); i++)
         {
-            Node *neighbour = new Node(*(current->neighbours[i]));
+            Node *neighbour = new Node(*(current->getNeighbour(i)));
 
             // Skip if already processed
             if (std::find_if(processed.begin(), processed.end(), [neighbour](Node *n) { return *neighbour == *n; }) !=
@@ -207,7 +207,7 @@ bool Path::aStarAlgorithm(const Vector2 &A, const Vector2 &B)
             if (costToNeighbour < neighbour->getG())
             {
                 neighbour->setG(costToNeighbour);
-                neighbour->connectionBackward = current;
+                neighbour->setConnectionBackward(current);
             }
 
             // Update G, H, F values if not in search or found a better path
@@ -274,12 +274,12 @@ bool Path::aStarAlgorithm(const Vector2 &A, const Vector2 &B)
             {
                 nSkip = nSkip->connectionsBackward[index];
                 n->connectionsBackward[index] = nSkip;
-                nSkip->connectionForward = n;
+                nSkip->getConnectionForward() = n;
             }
             else
             {
                 n->connectionsBackward[index] = nSkip;
-                nSkip->connectionForward = n;
+                nSkip->getConnectionForward() = n;
                 break;
             }
 
@@ -293,8 +293,8 @@ bool Path::aStarAlgorithm(const Vector2 &A, const Vector2 &B)
     for (int i = 1; i <= segmentCount; i++)
     {
         segments[i] = {n->getPosition(),
-n->connectionForward->getPosition(), i
-+ 1}; n = n->connectionForward;
+n->getConnectionForward()->getPosition(), i
++ 1}; n = n->getConnectionForward();
     }
     segments[segmentCount + 1] = {n->getPosition(), B, segmentCount + 2};
     segmentCount += 2;

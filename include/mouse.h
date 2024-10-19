@@ -7,20 +7,41 @@ enum Mode
     Playing
 };
 
+/**
+ * @class Mouse (singleton)
+ * @brief class to manage mouse locations and user inputs
+ *
+ */
 class Mouse final
 {
   public:
+    /**
+     * @brief singleton function
+     *
+     * @return Mouse* - singleton instance of mouse
+     */
+    static Mouse *getInstance();
     Mouse(const Mouse &) = delete;
     Mouse &operator=(const Mouse &) = delete;
-
-    // Static method to get the single instance of the class
-    static Mouse *getInstance();
-
+    /**
+     * @brief receives and reacts to all inputs
+     *
+     * @param dt float - time since last frame
+     */
     void update(float dt);
-    void renderBelow();
-    void renderTop();
-
+    /**
+     * @brief draws UI and inputs
+     */
+    void render();
+    /**
+     * @brief deselect all soldiers
+     */
     void deselectAll() const;
+    /**
+     * @brief getter for the selection area of the mouse
+     *
+     * @return const Rectangle - selected area
+     */
     const Rectangle &getSelectionArea() const;
 
     Mode mode;

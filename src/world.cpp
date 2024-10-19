@@ -57,7 +57,7 @@ void World::paintArea(const Vector2 &center, const float &radius, TileCategory c
                         if (x + rx >= 0 && x + rx < game::WIDTH && y + ry >= 0 && y + ry < game::HEIGHT)
                         {
 
-                            tiles[(y + ry) * game::WIDTH + (x + rx)]->updatePosition();
+                            tiles[(y + ry) * game::WIDTH + (x + rx)]->updatePlacement();
                         }
                     }
                 }
@@ -96,11 +96,11 @@ bool World::lineValidation(const Vector2 &A, const Vector2 &B, bool narrow) cons
         const Tile *tile = getTile(x1, y1);
         if (tile != nullptr)
         {
-            if (narrow && !tile->isNavigable())
+            if (!narrow && !tile->isNavigable())
             {
                 return false;
             }
-            if (!narrow && tile->getTileCategory() == TileCategory::WALL)
+            if (narrow && tile->getTileCategory() == TileCategory::WALL)
             {
                 return false;
             }

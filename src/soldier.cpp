@@ -24,7 +24,7 @@ float Soldier::walkingSpeed = 200.0f;
 
 Soldier::Soldier(const Vector2 &position)
     : position(position), direction(), objective({0.0f, 0.0f}), isSelected(false), isTravelling(false), path(nullptr),
-      lastTimeImmobile(0.0f)
+      lastTimeImmobile(0.0f), lastPosition({0.0f, 0.0f})
 {
 }
 
@@ -37,6 +37,8 @@ std::shared_ptr<Soldier> Soldier::newSoldier(const Vector2 &position)
 
 void Soldier::select()
 {
+    if (isSelected)
+        return;
     isSelected = true;
     selected.push_back(shared_from_this());
 }
@@ -75,6 +77,9 @@ void Soldier::target(const Vector2 &target, int unitIDP)
     {
         forget();
     }
+
+    lastTimeImmobile = GetTime();
+    lastPosition = position;
 
     targettingBusy.store(false);
 }
@@ -145,10 +150,11 @@ void Soldier::update(float dt)
     Vector2 worldIndexMin = world->getWorldAddress(Vector2Subtract(position, Vector2{obstacleRange, obstacleRange}));
     Vector2 worldIndexMax = world->getWorldAddress(Vector2Add(position, Vector2{obstacleRange, obstacleRange}));
 
+    int extra = std::floor(radius / game::TILE_SIZE);
     // iterate only through nearby walls
-    for (int x = (int)std::floor(worldIndexMin.x) - 1; x < (int)std::ceil(worldIndexMax.x) + 1; x++)
+    for (int x = (int)std::floor(worldIndexMin.x) - 1 - extra; x < (int)std::ceil(worldIndexMax.x) + 1 + extra; x++)
     {
-        for (int y = (int)std::floor(worldIndexMin.y) - 1; y < (int)std::ceil(worldIndexMax.y) + 1; y++)
+        for (int y = (int)std::floor(worldIndexMin.y) - 1 - extra; y < (int)std::ceil(worldIndexMax.y) + 1 + extra; y++)
         {
             if (world->getTileCategory(x, y) == TileCategory::WALL)
             {
@@ -176,6 +182,32 @@ void Soldier::update(float dt)
             if (GetTime() - lastTimeImmobile > 1.5)
             {
                 forget();
+
+                path = Path::newPath(position, objective);
+                if (path != nullptr)
+                    isTravelling = true;
+            }
+        }
+    }
+    // if we are travelling but aren't making progress (presumibly stuck)
+    // regenerate a different path
+    if (isTravelling)
+    {
+        if (Vector2DistanceSqr(lastPosition, position) >= walkingSpeed * walkingSpeed)
+        {
+            lastPosition = position;
+            lastTimeImmobile = GetTime();
+        }
+        else
+        {
+            if (GetTime() - lastTimeImmobile > 2.5)
+            {
+                path.reset();
+                path = Path::newPath(position, objective);
+                if (path == nullptr)
+                    isTravelling = false;
+                lastPosition = position;
+                lastTimeImmobile = GetTime();
             }
         }
     }
@@ -215,7 +247,20 @@ bool Soldier::isInWall() const
     World *world = World::getInstance();
     Vector2 coords = world->getWorldAddress(position);
 
-    return world->getTileCategory((int)coords.x, (int)coords.y) == TileCategory::WALL;
+    int extra = std::floor(radius / game::TILE_SIZE);
+    for (int x = (int)coords.x - 1 - extra; x < (int)coords.x + 1 + extra; x++)
+    {
+        for (int y = (int)coords.y - 1 - extra; y < (int)coords.y + 1 + extra; y++)
+        {
+            if (world->getTile(x, y) != nullptr && world->getTileCategory(x, y) == TileCategory::WALL)
+            {
+                if (CheckCollisionCircleRec(position, radius, world->getRectangle(x, y)))
+                    return true;
+            }
+        }
+    }
+
+    return false;
 }
 
 void Soldier::renderBelow()

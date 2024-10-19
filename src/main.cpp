@@ -52,7 +52,6 @@ int main()
         }
 
         mouse->update(game::DELTA);
-        mouse->renderBelow();
 
         for (std::shared_ptr<Soldier> s : Soldier::army)
         {
@@ -68,7 +67,7 @@ int main()
         }
 
         world->render();
-        mouse->renderTop();
+        mouse->render();
 
         Effect::iterate();
 

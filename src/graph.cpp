@@ -125,13 +125,14 @@ const Node *Graph::getBestNode(const Vector2 &P) const
         {
             const Node *currentNode = getNode(x, y);
             if (Vector2DistanceSqr(currentNode->getPosition(), P) >
-                std::min(2.0f * (outerRadius * outerRadius), bestDistanceSqr))
+                    std::min(5.0f * (outerRadius * outerRadius), bestDistanceSqr) ||
+                currentNode->inWall())
             {
                 continue;
             }
 
             float currentDistanceSqr =
-                (world->lineValidation(currentNode->getPosition(), P, false))
+                (world->lineValidation(P, currentNode->getPosition(), false))
                     ? Vector2DistanceSqr(currentNode->getPosition(), P)
                     : std::numeric_limits<float>::max(); // (just an inch lower than infinity, so will
                                                          // still pass unless there is another node
@@ -157,11 +158,6 @@ void Graph::render() const
             nodes[y * resolutionX + x]->render();
         }
     }
-}
-
-int Graph::getIndex(int x, int y) const
-{
-    return y * resolutionX + x;
 }
 
 /** Uses Dijkstra's algorithm to generate paths from all nodes to all nodes

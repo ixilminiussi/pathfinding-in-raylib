@@ -129,7 +129,7 @@ void Mouse::update(float dt)
     }
 }
 
-void Mouse::renderTop()
+void Mouse::render()
 {
     float scaleFactor = 12.0f; // Dynamically scale
     int numSoldiers = Soldier::selected.size();
@@ -137,6 +137,18 @@ void Mouse::renderTop()
     switch (mode)
     {
     case Mode::Playing:
+        if (IsMouseButtonDown(MOUSE_BUTTON_LEFT))
+        {
+            DrawRectangleRec(selectionArea, fill);
+            DrawRectangleLinesEx(selectionArea, 3.0f, outline);
+        }
+
+        if (IsMouseButtonPressed(MOUSE_BUTTON_RIGHT))
+        {
+            CircleWave::newEffect(GetMousePosition(), 5.0f, 30.0f, fill);
+            CircleWave::newEffect(GetMousePosition(), 2.5f, 15.0f, outline);
+        }
+
         // Sunflower seed algorithm for evenly distributed points in a circle
         for (int n = 1; n <= numSoldiers; n++) // Start from 1 to avoid clustering at the center
         {
@@ -162,6 +174,8 @@ void Mouse::renderTop()
         break;
 
     case Mode::Editing:
+        DrawCircleV(GetMousePosition(), editingRadius,
+                    {shoshone::yellow.r, shoshone::yellow.g, shoshone::yellow.b, 100});
 
         // Menu
         DrawText("<Tab>", 150.0f, 30.0f, 32, outline);
@@ -174,30 +188,6 @@ void Mouse::renderTop()
         DrawText("<Right Click>", 44.0f, 200.0f, 32, outline);
         DrawText("   Clear wall", 264.0f, 200.0f, 32, outline);
         DrawLineEx({266.0f, 30.0f}, {266.0f, 235.0f}, 4.0f, outline);
-        break;
-    }
-}
-
-void Mouse::renderBelow()
-{
-    switch (mode)
-    {
-    case Mode::Editing:
-        DrawCircleV(GetMousePosition(), editingRadius,
-                    {shoshone::yellow.r, shoshone::yellow.g, shoshone::yellow.b, 100});
-        break;
-    case Mode::Playing:
-        if (IsMouseButtonDown(MOUSE_BUTTON_LEFT))
-        {
-            DrawRectangleRec(selectionArea, fill);
-            DrawRectangleLinesEx(selectionArea, 3.0f, outline);
-        }
-
-        if (IsMouseButtonPressed(MOUSE_BUTTON_RIGHT))
-        {
-            CircleWave::newEffect(GetMousePosition(), 5.0f, 30.0f, fill);
-            CircleWave::newEffect(GetMousePosition(), 2.5f, 15.0f, outline);
-        }
         break;
     }
 }
