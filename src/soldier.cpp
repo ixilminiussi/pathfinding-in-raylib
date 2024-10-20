@@ -14,8 +14,10 @@ std::vector<std::shared_ptr<Soldier>> Soldier::army = std::vector<std::shared_pt
 std::vector<std::shared_ptr<Soldier>> Soldier::selected = std::vector<std::shared_ptr<Soldier>>();
 
 float Soldier::radius = 8.0f;
-float Soldier::separationRangeSqr = (Soldier::radius + 9.0f) * (Soldier::radius + 9.0f);
+float Soldier::separationRangeSqr = (Soldier::radius + 10.0f) * (Soldier::radius + 10.0f);
 float Soldier::separationStrength = 15.0f;
+float Soldier::alignmentRangeSqr = (Soldier::radius + 50.0f) * (Soldier::radius + 50.0f);
+float Soldier::alignmentStrength = 5.0f;
 float Soldier::obstacleRange = 10.0f;
 float Soldier::obstacleStrength = 15.0f;
 float Soldier::alongsidePathStrength = 20.0f;
@@ -118,16 +120,26 @@ void Soldier::followPath(Vector2 &impulse)
     }
 }
 
-void Soldier::avoidSoldiers(Vector2 &impulse)
+void Soldier::avoidAndAlignSoldiers(Vector2 &impulse)
 {
     for (std::shared_ptr<Soldier> s : army)
     {
+        // separation
         if (!((!isTravelling || !s->isTravelling) && s->unitID == unitID) || (s->isTravelling && s->unitID != unitID) ||
             (isTravelling && s->isTravelling))
         {
             if (Vector2DistanceSqr(position, s->position) <= separationRangeSqr)
             {
                 impulse += (position - s->position) * separationStrength;
+            }
+        }
+
+        // alignment
+        if (s->unitID == unitID && s->isTravelling && isTravelling)
+        {
+            if (Vector2DistanceSqr(position, s->position) <= alignmentRangeSqr)
+            {
+                impulse += s->direction * alignmentStrength;
             }
         }
     }
@@ -207,23 +219,22 @@ void Soldier::selfCorrect()
 void Soldier::applyCollisions()
 {
     bool retargetFlag = false;
-    if (isInWall() != Vector2Zero())
+    if (isInWall())
     {
         for (int i = 0; i < 100; i++)
         {
-            Vector2 away = Vector2Normalize(position - isInWall());
-            position += away;
-            if (isInWall() == Vector2Zero())
+            position -= Vector2Normalize(direction);
+            if (!isInWall())
                 break;
         }
-        while (isInWall() != Vector2Zero())
+        while (isInWall())
         {
             position = Vector2({(float)GetRandomValue(10, screen::WIDTH), (float)GetRandomValue(10, screen::HEIGHT)});
             retargetFlag = true;
         }
     }
 
-    if (retargetFlag)
+    if (retargetFlag && isTravelling)
     {
         path.reset();
         path = Path::newPath(position, objective);
@@ -246,7 +257,7 @@ void Soldier::update(float dt)
     Vector2 impulse = {0.0f, 0.0f};
 
     followPath(impulse);
-    avoidSoldiers(impulse);
+    avoidAndAlignSoldiers(impulse);
     avoidWalls(impulse);
 
     checkArrival(impulse);
@@ -267,13 +278,10 @@ void Soldier::update(float dt)
     cv.notify_all(); // Notify any waiting threads
 }
 
-Vector2 Soldier::isInWall() const
+bool Soldier::isInWall() const
 {
     World *world = World::getInstance();
     Vector2 coords = world->getWorldAddress(position);
-
-    Vector2 center = Vector2Zero();
-    int rectangleCount = 0;
 
     int extra = std::floor(radius / game::TILE_SIZE);
     for (int x = (int)coords.x - 1 - extra; x < (int)coords.x + 1 + extra; x++)
@@ -282,17 +290,15 @@ Vector2 Soldier::isInWall() const
         {
             if (world->getTile(x, y) != nullptr && world->getTileCategory(x, y) == TileCategory::WALL)
             {
-                Rectangle rec = world->getRectangle(x, y);
-                if (CheckCollisionCircleRec(position, radius, rec))
+                if (CheckCollisionCircleRec(position, radius, world->getRectangle(x, y)))
                 {
-                    center += {rec.x + rec.width / 2.0f, rec.y + rec.height / 2.0f};
-                    rectangleCount++;
+                    return true;
                 }
             }
         }
     }
 
-    return center;
+    return false;
 }
 
 void Soldier::renderBelow()

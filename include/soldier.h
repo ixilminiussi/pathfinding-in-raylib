@@ -78,11 +78,12 @@ class Soldier : public std::enable_shared_from_this<Soldier>
      */
     void followPath(Vector2 &impulse);
     /**
-     * @brief influences impulse away from other soldiers
+     * @brief influences impulse away from other soldiers while following a
+     * similar direction (for better flow and boid-like movement)
      *
      * @param impulse Vector2& - impulse to be influenced
      */
-    void avoidSoldiers(Vector2 &impulse);
+    void avoidAndAlignSoldiers(Vector2 &impulse);
     /**
      * @brief influences impulse away from walls
      *
@@ -111,7 +112,7 @@ class Soldier : public std::enable_shared_from_this<Soldier>
      * @return Vector2 - {0.0f, 0.0f} if soldier NOT inside a wall, otherwise
      * the average center of all overlapping walls
      */
-    Vector2 isInWall() const;
+    bool isInWall() const;
 
     Vector2 position, direction, lastPosition;
     Vector2 objective;
@@ -131,6 +132,8 @@ class Soldier : public std::enable_shared_from_this<Soldier>
 
     static float separationRangeSqr;
     static float separationStrength;
+    static float alignmentRangeSqr;
+    static float alignmentStrength;
     static float obstacleRange;
     static float obstacleStrength;
     static float towardsPathStrength;
