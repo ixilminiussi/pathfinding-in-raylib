@@ -22,7 +22,6 @@ class Soldier : public std::enable_shared_from_this<Soldier>
      */
     static std::shared_ptr<Soldier> newSoldier(const Vector2 &position);
     ~Soldier() = default;
-
     /**
      * @brief highlights the soldier
      */
@@ -73,11 +72,46 @@ class Soldier : public std::enable_shared_from_this<Soldier>
   private:
     Soldier(const Vector2 &position);
     /**
-     * @brief checks approximately if soldier is inside a wall
+     * @brief influences impulse towards following the path
      *
-     * @return
+     * @param impulse Vector2& - impulse to be influenced
      */
-    bool isInWall() const;
+    void followPath(Vector2 &impulse);
+    /**
+     * @brief influences impulse away from other soldiers
+     *
+     * @param impulse Vector2& - impulse to be influenced
+     */
+    void avoidSoldiers(Vector2 &impulse);
+    /**
+     * @brief influences impulse away from walls
+     *
+     * @param impulse Vector2& - impulse to be influenced
+     */
+    void avoidWalls(Vector2 &impulse);
+    /**
+     * @brief once we have arrived and stop moving, forget path and stop
+     * travelling
+     *
+     * @param impulse Vector2& - current applied force
+     */
+    void checkArrival(const Vector2 &impulse);
+    /**
+     * @brief if we are stuck, generate a new path
+     */
+    void selfCorrect();
+    /**
+     * @brief if we are inside a wall, get out of said wall by back tracking. If
+     * we cannot, simply teleport to random location
+     */
+    void applyCollisions();
+    /**
+     * @brief checks if soldier is inside a wall
+     *
+     * @return Vector2 - {0.0f, 0.0f} if soldier NOT inside a wall, otherwise
+     * the average center of all overlapping walls
+     */
+    Vector2 isInWall() const;
 
     Vector2 position, direction, lastPosition;
     Vector2 objective;
@@ -91,7 +125,7 @@ class Soldier : public std::enable_shared_from_this<Soldier>
     int unitID;
 
     std::unique_ptr<Path> path;
-    double lastTimeImmobile;
+    double lastTimeImmobile, lastTimeStuck;
 
     double timeEntered;
 

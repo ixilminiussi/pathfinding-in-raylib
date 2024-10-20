@@ -44,6 +44,7 @@ set(HEADERS
     include/effects.h
     include/graph.h
     include/node.h
+    include/rayplus.h
 )
 
 # Add the executable

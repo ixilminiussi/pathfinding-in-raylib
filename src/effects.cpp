@@ -21,13 +21,12 @@ void Effect::iterate()
     }
 }
 
-Effect::Effect(const Vector2 &position, const float &scale, const float &lerp, const Color &color)
+Effect::Effect(const Vector2 &position, float scale, float lerp, const Color &color)
     : position(position), scale(scale), lerp(lerp), color(color)
 {
 }
 
-std::shared_ptr<CircleWave> CircleWave::newEffect(const Vector2 &position, const float &scale, const float &lerp,
-                                                  const Color &color)
+std::shared_ptr<CircleWave> CircleWave::newEffect(const Vector2 &position, float scale, float lerp, const Color &color)
 {
     std::shared_ptr<CircleWave> effect = std::shared_ptr<CircleWave>(new CircleWave(position, scale, lerp, color));
 
@@ -36,7 +35,7 @@ std::shared_ptr<CircleWave> CircleWave::newEffect(const Vector2 &position, const
     return effect;
 }
 
-CircleWave::CircleWave(const Vector2 &position, const float &scale, const float &lerp, const Color &color)
+CircleWave::CircleWave(const Vector2 &position, float scale, float lerp, const Color &color)
     : Effect(position, scale, lerp, color), mainScale(1.0f * scale), innerScale(0.0f), endScale(10.0f * scale),
       startingAngle((float)GetRandomValue(0, 360))
 {
@@ -48,7 +47,7 @@ void CircleWave::render()
     DrawPolyLinesEx(position, 5, mainScale, startingAngle + (innerScale * 2.0f), lineWidth, color);
 }
 
-void CircleWave::update(const float &dt)
+void CircleWave::update(float dt)
 {
     mainScale = Lerp(mainScale, endScale, lerp * dt);
     innerScale = Lerp(innerScale, endScale, lerp / 3.0f * dt);

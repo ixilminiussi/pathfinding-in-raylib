@@ -2,13 +2,14 @@
 #include "graph.h"
 #include "namespaces.h"
 #include "node.h"
-#include "raylib.h"
-#include "raymath.h"
 #include "world.h"
 #include <algorithm>
 #include <cmath>
 #include <limits>
 #include <memory>
+#include <raylib.h>
+#include <raymath.h>
+#include <rayplus.h>
 #include <vector>
 
 // std::vector<Path *> Path::bakedPaths = std::vector<Path *>();
@@ -316,15 +317,15 @@ Force Path::getProjectedPointOnSegment(const Segment &segment, const Vector2 &P)
 {
     const Vector2 &A = segment.A;
     const Vector2 &B = segment.B;
-    Vector2 direction = Vector2Normalize(Vector2Subtract(B, A));
+    Vector2 direction = Vector2Normalize(B - A);
     // in case segment is very small
     float segmentLength = Vector2DistanceSqr(A, B);
     if (segmentLength <= 1.0f)
     {
-        return {A, Vector2Subtract(P, A)};
+        return {A, P - A};
     }
 
-    float pDotA = Vector2DotProduct(Vector2Subtract(P, A), Vector2Subtract(B, A));
+    float pDotA = Vector2DotProduct(P - A, B - A);
     float param = pDotA / segmentLength;
 
     if (param <= 0)
@@ -333,16 +334,16 @@ Force Path::getProjectedPointOnSegment(const Segment &segment, const Vector2 &P)
     }
     if (param >= 1)
     {
-        if (Vector2Equals(B, end))
+        if (B == end)
         {
-            return {B, Vector2Subtract(B, P)};
+            return {B, B - P};
         }
         else
         {
             return getProjectedPointOnSegment(getSegment(segment.index + 1), P);
         }
     }
-    return {Vector2Add(A, Vector2Scale(Vector2Subtract(B, A), param)), direction};
+    return {A + ((B - A) * param), direction};
 }
 
 const Segment &Path::getSegment(int index) const

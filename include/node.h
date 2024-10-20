@@ -68,14 +68,14 @@ class Node
      */
     void addNeighbour(const Node *node);
 
-    void setG(const float &newG); // @brief updates F accordingly
-    void setH(const float &newH); // @brief updates F accordingly
+    void setG(float newG); // @brief updates F accordingly
+    void setH(float newH); // @brief updates F accordingly
     void setConnectionBackward(Node *node);
     void setConnectionForward(Node *node);
 
-    const float &getG() const;
-    const float &getF() const;
-    const float &getH() const;
+    float getG() const;
+    float getF() const;
+    float getH() const;
     const Node *getNeighbour(int index) const; // @brief gets neighbour from index
     int getNeighbourCount() const;
     Node *getConnectionBackward();

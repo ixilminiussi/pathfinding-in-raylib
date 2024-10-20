@@ -40,7 +40,7 @@ void World::render() const
     }
 }
 
-void World::paintArea(const Vector2 &center, const float &radius, TileCategory category)
+void World::paintArea(const Vector2 &center, float radius, TileCategory category)
 {
     for (int x = 0; x < game::WIDTH; x++)
     {

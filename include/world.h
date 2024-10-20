@@ -30,7 +30,7 @@ class World
      * @param radius float - radius of area
      * @param category TileCategory - new category
      */
-    void paintArea(const Vector2 &center, const float &radius, enum TileCategory category);
+    void paintArea(const Vector2 &center, float radius, enum TileCategory category);
     /**
      * @brief converts screen to world coordinate system
      *

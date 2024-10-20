@@ -6,6 +6,7 @@
 #include <cmath>
 #include <limits>
 #include <raymath.h>
+#include <rayplus.h>
 
 Graph *Graph::instance = nullptr;
 
@@ -47,12 +48,12 @@ Graph::Graph()
             if (y % 2 == 0)
             {
                 nodes[y * resolutionX + x] =
-                    new Node(Vector2Add(offset, {innerRadius * 2.0f * x, outerRadius * 1.5f * y}), x, y);
+                    new Node(offset + Vector2({innerRadius * 2.0f * x, outerRadius * 1.5f * y}), x, y);
             }
             else
             {
                 nodes[y * resolutionX + x] =
-                    new Node(Vector2Add(offset, {innerRadius * (2.0f * x - 1), outerRadius * 1.5f * y}), x, y);
+                    new Node(offset + Vector2({innerRadius * (2.0f * x - 1), outerRadius * 1.5f * y}), x, y);
             }
         }
     }

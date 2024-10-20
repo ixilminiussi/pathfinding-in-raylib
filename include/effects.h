@@ -18,7 +18,7 @@ class Effect
      *
      * @param dt float - time since last frame
      */
-    virtual void update(const float &dt) = 0;
+    virtual void update(float dt) = 0;
     /**
      * @brief draws effect on screen
      */
@@ -48,7 +48,7 @@ class Effect
      * from A to B
      * @param color Color - color of effect
      */
-    Effect(const Vector2 &position, const float &scale, const float &lerp, const Color &color);
+    Effect(const Vector2 &position, float scale, float lerp, const Color &color);
 
     Vector2 position;
     float scale;
@@ -69,15 +69,14 @@ class CircleWave final : public Effect
      * @param lerp float - lerp speed to grow/rotate circle effect
      * @param color Color - color of effect
      */
-    static std::shared_ptr<CircleWave> newEffect(const Vector2 &position, const float &scale, const float &lerp,
-                                                 const Color &color);
+    static std::shared_ptr<CircleWave> newEffect(const Vector2 &position, float scale, float lerp, const Color &color);
 
     /**
      * @brief grows and rotates the effect every frame
      *
      * @param dt float - time since last frame
      */
-    void update(const float &dt) override;
+    void update(float dt) override;
     /**
      * @brief draws effect on screen
      */
@@ -99,7 +98,7 @@ class CircleWave final : public Effect
      * @param lerp float - lerp speed to rotate and grow effect
      * @param color Color - color of effect
      */
-    CircleWave(const Vector2 &position, const float &scale, const float &lerp, const Color &color);
+    CircleWave(const Vector2 &position, float scale, float lerp, const Color &color);
 
     float mainScale;
     float innerScale;
