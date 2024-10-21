@@ -167,7 +167,7 @@ Rectangle World::getRectangle(int x, int y) const
 
 const Tile *World::getTile(int x, int y) const
 {
-    if ((x < 0) || (x >= game::WIDTH) || (y < 0) || (y >= game::HEIGHT))
+    if ((x < 0) || (x >= game::WIDTH - 1) || (y < 0) || (y >= game::HEIGHT - 1))
         return nullptr;
 
     return tiles[y * game::WIDTH + x];

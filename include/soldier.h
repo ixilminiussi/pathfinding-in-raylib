@@ -63,6 +63,7 @@ class Soldier : public std::enable_shared_from_this<Soldier>
      * @return Vector2 - position
      */
     const Vector2 &getPosition() const;
+    void setBoundingBox(std::shared_ptr<class BB> boundingBox);
 
     static std::vector<std::shared_ptr<Soldier>> army;
     static std::vector<std::shared_ptr<Soldier>> selected;
@@ -124,6 +125,7 @@ class Soldier : public std::enable_shared_from_this<Soldier>
     std::condition_variable cv;
 
     int unitID;
+    std::shared_ptr<BB> boundingBox;
 
     std::unique_ptr<Path> path;
     double lastTimeImmobile, lastTimeStuck;

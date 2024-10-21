@@ -33,16 +33,19 @@ std::unique_ptr<Path> Path::newPath(const Vector2 &A, const Vector2 &B)
 
 void Path::render() const
 {
-    Color yellow = ColorAlphaBlend(shoshone::maroon, shoshone::yellow, Color{150, 150, 150, 150});
-
-    for (int i = 0; i < segmentCount; i++)
+    if (debug::paths)
     {
-        DrawLineEx(getSegment(i).A, getSegment(i).B, 3.0f, {yellow.r, yellow.g, yellow.b, 100});
+        Color yellow = ColorAlphaBlend(shoshone::maroon, shoshone::yellow, Color{150, 150, 150, 150});
 
-        DrawCircleV(getSegment(i).A, 4.0f, yellow);
-        if (i == segmentCount - 1)
+        for (int i = 0; i < segmentCount; i++)
         {
-            DrawCircleV(getSegment(i).B, 6.0f, yellow);
+            DrawLineEx(getSegment(i).A, getSegment(i).B, 3.0f, {yellow.r, yellow.g, yellow.b, 100});
+
+            DrawCircleV(getSegment(i).A, 4.0f, yellow);
+            if (i == segmentCount - 1)
+            {
+                DrawCircleV(getSegment(i).B, 6.0f, yellow);
+            }
         }
     }
 }
@@ -135,7 +138,7 @@ bool Path::aStarAlgorithm(const Vector2 &A, const Vector2 &B)
 
             while (true)
             {
-                if (world->lineValidation(n->getPosition(), A))
+                if (world->lineValidation(n->getPosition(), A, true))
                 {
                     addSegment({A, n->getPosition()});
                     break;

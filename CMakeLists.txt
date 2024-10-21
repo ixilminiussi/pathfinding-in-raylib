@@ -31,6 +31,7 @@ set(SOURCES
     src/effects.cpp
     src/graph.cpp
     src/node.cpp
+    src/boundingBox.cpp
 )
 
 # Define header files (optional, but useful for IDEs)
@@ -45,6 +46,7 @@ set(HEADERS
     include/graph.h
     include/node.h
     include/rayplus.h
+    include/boundingBox.h
 )
 
 # Add the executable

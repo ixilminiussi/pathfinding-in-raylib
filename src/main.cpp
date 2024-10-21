@@ -1,3 +1,4 @@
+#include "boundingBox.h"
 #include "effects.h"
 #include "graph.h"
 #include "mouse.h"
@@ -12,6 +13,8 @@ int main()
     if (screen::FULL_SCREEN)
         SetWindowState(FLAG_FULLSCREEN_MODE);
 
+    BBLand *bBLand = BBLand::getInstance();
+
     for (int i = 0; i < game::SOLDIER_COUNT; i++)
     {
         Soldier::newSoldier(
@@ -20,7 +23,6 @@ int main()
 
     Mouse *mouse = Mouse::getInstance();
     World *world = World::getInstance();
-
     Graph *graph = Graph::getInstance();
 
     while (!WindowShouldClose())
@@ -70,6 +72,9 @@ int main()
         mouse->render();
 
         Effect::iterate();
+
+        bBLand->update();
+        bBLand->render();
 
         EndDrawing();
     }

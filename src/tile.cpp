@@ -130,7 +130,7 @@ const Rectangle &Tile::getRectangle() const
     return rectangle;
 }
 
-bool Tile::isNavigable() const
+const bool Tile::isNavigable() const
 {
     return navigable;
 }

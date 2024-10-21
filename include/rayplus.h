@@ -1,3 +1,4 @@
+#pragma once
 // My own custom functions for raylib (because the default ones are annoying and
 // bad and wrong and do unnecessary copies and use floats for everything and are
 // allergic to operators

@@ -151,12 +151,14 @@ const Node *Graph::getBestNode(const Vector2 &P) const
 
 void Graph::render() const
 {
-    return;
-    for (int x = 0; x < resolutionX; x++)
+    if (debug::graph)
     {
-        for (int y = 0; y < resolutionY; y++)
+        for (int x = 0; x < resolutionX; x++)
         {
-            nodes[y * resolutionX + x]->render();
+            for (int y = 0; y < resolutionY; y++)
+            {
+                nodes[y * resolutionX + x]->render();
+            }
         }
     }
 }

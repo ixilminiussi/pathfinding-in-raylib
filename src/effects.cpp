@@ -26,6 +26,50 @@ Effect::Effect(const Vector2 &position, float scale, float lerp, const Color &co
 {
 }
 
+std::shared_ptr<ToggleButton> ToggleButton::newEffect(const Vector2 &position, float scale, float lerp,
+                                                      const Color &color, bool &link, const char *prompt)
+{
+    std::shared_ptr<ToggleButton> button =
+        std::shared_ptr<ToggleButton>(new ToggleButton(position, scale, lerp, color, link, prompt));
+
+    Effect::effects.push_back(button);
+
+    return button;
+}
+
+ToggleButton::ToggleButton(const Vector2 &position, float scale, float lerp, const Color &color, bool &linkP,
+                           const char *promptP)
+    : Effect(position, scale, lerp, color), link(linkP),
+      area(Rectangle({position.x, position.y, 20.0f * scale, 20.0f * scale})), prompt(promptP)
+{
+}
+
+void ToggleButton::update(float dt)
+{
+    if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
+    {
+        if (CheckCollisionPointRec(GetMousePosition(), area))
+        {
+            link = (link) ? false : true;
+        }
+    }
+}
+
+void ToggleButton::render()
+{
+    DrawRectangleLinesEx(area, 2.0f, color);
+    if (link)
+        DrawRectangle(position.x + (4.0f * scale), position.y + (4.0f * scale), area.width - (8.0f * scale),
+                      area.height - (8.0f * scale), color);
+
+    DrawText(prompt, position.x + area.width + (10.0f * scale), position.y, (int)area.height, color);
+}
+
+bool ToggleButton::checkEndOfLife()
+{
+    return false;
+}
+
 std::shared_ptr<CircleWave> CircleWave::newEffect(const Vector2 &position, float scale, float lerp, const Color &color)
 {
     std::shared_ptr<CircleWave> effect = std::shared_ptr<CircleWave>(new CircleWave(position, scale, lerp, color));

@@ -17,6 +17,11 @@ Mouse::Mouse()
     : mode(Mode::Editing), fill({yellow.r, yellow.g, yellow.b, 100}), outline(yellow), editingRadius(50.0f),
       mouseStart({0.0f, 0.0f}), selectionArea({0.0f, 0.0f, 0.0f, 0.0f}), unitID(0)
 {
+    ToggleButton::newEffect({50.0f, screen::HEIGHT - 100.0f}, 2.0f, 0.0f, shoshone::yellow, debug::paths, "Show paths");
+    ToggleButton::newEffect({50.0f, screen::HEIGHT - 150.0f}, 2.0f, 0.0f, shoshone::yellow, debug::graph,
+                            "Show traversal graph");
+    ToggleButton::newEffect({50.0f, screen::HEIGHT - 200.0f}, 2.0f, 0.0f, shoshone::yellow, debug::boundingBoxes,
+                            "Show bounding boxes");
 }
 
 Mouse *Mouse::getInstance()
@@ -190,6 +195,8 @@ void Mouse::render()
         DrawLineEx({266.0f, 30.0f}, {266.0f, 235.0f}, 4.0f, outline);
         break;
     }
+
+    DrawLineEx({266.0f, 30.0f}, {266.0f, 235.0f}, 4.0f, outline);
 }
 
 void Mouse::deselectAll() const

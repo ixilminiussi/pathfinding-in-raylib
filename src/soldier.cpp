@@ -1,5 +1,8 @@
 #include "soldier.h"
+#include "boundingBox.h"
+#include "graph.h"
 #include "namespaces.h"
+#include "node.h"
 #include "path.h"
 #include "raylib.h"
 #include "raymath.h"
@@ -15,11 +18,11 @@ std::vector<std::shared_ptr<Soldier>> Soldier::selected = std::vector<std::share
 
 float Soldier::radius = 8.0f;
 float Soldier::separationRangeSqr = (Soldier::radius + 10.0f) * (Soldier::radius + 10.0f);
-float Soldier::separationStrength = 15.0f;
+float Soldier::separationStrength = 25.0f;
 float Soldier::alignmentRangeSqr = (Soldier::radius + 50.0f) * (Soldier::radius + 50.0f);
-float Soldier::alignmentStrength = 5.0f;
+float Soldier::alignmentStrength = 2.0f;
 float Soldier::obstacleRange = 10.0f;
-float Soldier::obstacleStrength = 15.0f;
+float Soldier::obstacleStrength = 30.0f;
 float Soldier::alongsidePathStrength = 20.0f;
 float Soldier::towardsPathStrength = 1.0f;
 float Soldier::steeringDelta = 5.0f;
@@ -35,6 +38,10 @@ std::shared_ptr<Soldier> Soldier::newSoldier(const Vector2 &position)
 {
     std::shared_ptr<Soldier> soldier = std::shared_ptr<Soldier>(new Soldier(position));
     Soldier::army.push_back(soldier);
+
+    BBLand *bBLand = BBLand::getInstance();
+    bBLand->findBB(soldier);
+
     return soldier;
 }
 
@@ -59,6 +66,11 @@ const Vector2 &Soldier::getPosition() const
     return position;
 }
 
+void Soldier::setBoundingBox(std::shared_ptr<BB> boundingBoxP)
+{
+    boundingBox = boundingBoxP;
+}
+
 void Soldier::target(const Vector2 &target, int unitIDP)
 {
     // Wait until both functions are not busy
@@ -69,16 +81,20 @@ void Soldier::target(const Vector2 &target, int unitIDP)
 
     forget();
 
+    objective = target;
+    isTravelling = true;
+    unitID = unitIDP;
+
     path = Path::newPath(position, target);
-    if (path->isValid())
+    if (!path->isValid())
     {
-        objective = target;
-        isTravelling = true;
-        unitID = unitIDP;
-    }
-    else
-    {
-        forget();
+        Graph *graph = Graph::getInstance();
+        path = Path::newPath(position, graph->getBestNode(position)->getPosition());
+
+        if (!path->isValid())
+        {
+            forget();
+        }
     }
 
     lastTimeImmobile = GetTime();
@@ -122,24 +138,28 @@ void Soldier::followPath(Vector2 &impulse)
 
 void Soldier::avoidAndAlignSoldiers(Vector2 &impulse)
 {
-    for (std::shared_ptr<Soldier> s : army)
+    for (int i = 0; i < boundingBox->getNeighbourCount(); i++)
     {
-        // separation
-        if (!((!isTravelling || !s->isTravelling) && s->unitID == unitID) || (s->isTravelling && s->unitID != unitID) ||
-            (isTravelling && s->isTravelling))
+        std::shared_ptr<BB> bB = boundingBox->getNeighbours()[i];
+        for (std::shared_ptr<Soldier> s : bB->getSoldiers())
         {
-            if (Vector2DistanceSqr(position, s->position) <= separationRangeSqr)
+            // separation
+            if (!((!isTravelling || !s->isTravelling) && s->unitID == unitID) ||
+                (s->isTravelling && s->unitID != unitID) || (isTravelling && s->isTravelling))
             {
-                impulse += (position - s->position) * separationStrength;
+                if (Vector2DistanceSqr(position, s->position) <= separationRangeSqr)
+                {
+                    impulse += (position - s->position) * separationStrength;
+                }
             }
-        }
 
-        // alignment
-        if (s->unitID == unitID && s->isTravelling && isTravelling)
-        {
-            if (Vector2DistanceSqr(position, s->position) <= alignmentRangeSqr)
+            // alignment
+            if (s->unitID == unitID && s->isTravelling && isTravelling)
             {
-                impulse += s->direction * alignmentStrength;
+                if (Vector2DistanceSqr(position, s->position) <= alignmentRangeSqr)
+                {
+                    impulse += s->direction * alignmentStrength;
+                }
             }
         }
     }
@@ -196,19 +216,22 @@ void Soldier::selfCorrect()
     // regenerate a different path
     if (isTravelling)
     {
-        if (Vector2DistanceSqr(lastPosition, position) >= game::DELTA * 5 * walkingSpeed * walkingSpeed)
+        if (Vector2DistanceSqr(lastPosition, position) >= 2 * game::DELTA * walkingSpeed * walkingSpeed)
         {
             lastPosition = position;
             lastTimeStuck = GetTime();
         }
         else
         {
-            if (GetTime() - lastTimeStuck > 5.0)
+            if (GetTime() - lastTimeStuck > 2.0)
             {
                 path.reset();
+
                 path = Path::newPath(position, objective);
                 if (!path->isValid())
+                {
                     isTravelling = false;
+                }
                 lastPosition = position;
                 lastTimeStuck = GetTime();
             }
@@ -261,7 +284,6 @@ void Soldier::update(float dt)
     avoidWalls(impulse);
 
     checkArrival(impulse);
-    selfCorrect();
 
     if (impulse != Vector2Zero())
     {
@@ -272,6 +294,8 @@ void Soldier::update(float dt)
     position += direction * walkingSpeed * dt;
 
     applyCollisions();
+
+    selfCorrect();
 
     // unlock the mainland to potential intruders
     mainlandBusy.store(false);

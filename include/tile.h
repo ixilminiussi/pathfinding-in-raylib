@@ -33,7 +33,7 @@ class Tile
 
     void setNavigable(bool state);
     void setTileCategory(TileCategory category); //@brief updates the placement
-    bool isNavigable() const;
+    const bool isNavigable() const;
     TileCategory getTileCategory() const;
     const Rectangle &getRectangle() const;
 

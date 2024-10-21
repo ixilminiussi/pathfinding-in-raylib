@@ -56,6 +56,35 @@ class Effect
     Color color;
 };
 
+class ToggleButton final : public Effect
+{
+  public:
+    static std::shared_ptr<ToggleButton> newEffect(const Vector2 &position, float scale, float lerp, const Color &color,
+                                                   bool &link, const char *prompt = "");
+    /**
+     * @brief grows and rotates the effect every frame
+     *
+     * @param dt float - time since last frame
+     */
+    void update(float dt) override;
+    /**
+     * @brief draws effect on screen
+     */
+    void render() override;
+    /**
+     * @brief buttons never diiiie
+     *
+     * @return false always
+     */
+    bool checkEndOfLife() override;
+
+  private:
+    ToggleButton(const Vector2 &position, float scale, float lerp, const Color &color, bool &link, const char *prompt);
+    bool &link;
+    Rectangle area;
+    const char *prompt;
+};
+
 class CircleWave final : public Effect
 {
   public:

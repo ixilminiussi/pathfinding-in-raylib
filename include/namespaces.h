@@ -18,8 +18,17 @@ extern const int WIDTH;
 extern const int HEIGHT;
 extern const int GRAPH_RESOLUTION;
 extern const int numThreads;
+extern const int bbSubdivisionsX;
+extern const int bbSubdivisionsY;
 extern ctpl::thread_pool pool;
 } // namespace game
+
+namespace debug
+{
+extern bool boundingBoxes;
+extern bool graph;
+extern bool paths;
+} // namespace debug
 
 namespace shoshone
 {

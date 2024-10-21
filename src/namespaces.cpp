@@ -13,15 +13,24 @@ const bool FULL_SCREEN = true;
 
 namespace game
 {
-int SOLDIER_COUNT = 200;
+int SOLDIER_COUNT = 500;
 const int TILE_SIZE = 5;
 float DELTA;
 const int WIDTH = screen::WIDTH / TILE_SIZE;
 const int HEIGHT = screen::HEIGHT / TILE_SIZE;
 const int GRAPH_RESOLUTION = 35;
+const int bbSubdivisionsX = 40;
+const int bbSubdivisionsY = 30;
 const int numThreads = std::fmax(1u, std::thread::hardware_concurrency());
 ctpl::thread_pool pool(numThreads);
 } // namespace game
+
+namespace debug
+{
+bool boundingBoxes = false;
+bool graph = false;
+bool paths = true;
+} // namespace debug
 
 namespace shoshone
 {
