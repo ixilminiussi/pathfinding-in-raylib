@@ -31,5 +31,9 @@ A pathfinding experiment that ended up growing beyond its original scope. This i
     2. While using A*, check for a straight line every chance we get. If we find a hit, we add this distance to the F weight and keep trying only paths which could outperform our current winner.
     3. Once a path is found, we check for potential straight lines to skip through nodes leading up to our goal, this cuts down the total amount of segments and shortens the distance one last time.
 
+## Possible extensions
+- **Varying grid scales:** Currently we use only one large hexagonal grid. This is unoptimal and can sometimes leads to missing smaller openings in the world map. Ideally, larger grids would be use for larger distances, and slowly move to more granual alternatives as they approach their location.
+- **Better Node avoidance:** If there is a large cluster of nodes in the path, tough luck! Soldiers will simply bulldoze through them until they reach their goal. This could be avoided with complex mathematics, but more appropriate would be to simply ensure nodes don't *stop* on one another, but not necessarily avoid one another when walking. Similarly to Age of Empire or most other RTS games.
+- **Make a game!:** RTS games are notoriously difficult to design, but this is such a fun implementation that it would be a shame not to! I would probably need to model it onto an existing experience, and most likely a city builder like "surviving Mars" which makes use of similar mechanics without the need of creating complex enemy AI.
 
 
