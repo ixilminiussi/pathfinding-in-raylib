@@ -6,7 +6,7 @@
 
 BB::BB(const Rectangle &areaP) : area(areaP), neighbourCount(0)
 {
-    debugColor = {(u_char)GetRandomValue(0, 255), (u_char)GetRandomValue(0, 255), (u_char)GetRandomValue(0, 255), 255};
+    debugColor = {(unsigned char)GetRandomValue(0, 255), (unsigned char)GetRandomValue(0, 255), (unsigned char)GetRandomValue(0, 255), 255};
 }
 
 const std::vector<std::shared_ptr<Soldier>> BB::getSoldiers() const
