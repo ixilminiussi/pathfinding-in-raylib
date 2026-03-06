@@ -6,7 +6,7 @@
 #include "world.h"
 #include <algorithm>
 #include <ctpl_stl.h>
-#include <math.h>
+#include <cmath>
 #include <memory>
 #include <raylib.h>
 

@@ -10,7 +10,7 @@
 #include "tile.h"
 #include "world.h"
 #include <algorithm>
-#include <math.h>
+#include <cmath>
 #include <memory>
 
 std::vector<std::shared_ptr<Soldier>> Soldier::army = std::vector<std::shared_ptr<Soldier>>();
