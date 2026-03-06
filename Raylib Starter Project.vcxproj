@@ -76,7 +76,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)\raylib;$(SolutionDir)\raylib\external;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)\include;$(SolutionDir)\raylib;$(SolutionDir)\raylib\external;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -93,6 +93,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>$(SolutionDir)\include;$(SolutionDir)\raylib;$(SolutionDir)\raylib\external;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -107,7 +108,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)\raylib;$(SolutionDir)\raylib\external;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)\include;$(SolutionDir)\raylib;$(SolutionDir)\raylib\external;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -124,6 +125,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>$(SolutionDir)\include;$(SolutionDir)\raylib;$(SolutionDir)\raylib\external;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -145,9 +147,15 @@
 	<ClCompile Include="src/world.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="include/boundingBox.h" />
+    <ClInclude Include="include/ctpl_stl.h" />
+    <ClInclude Include="include/effects.h" />
+    <ClInclude Include="include/graph.h" />
     <ClInclude Include="include/mouse.h" />
-    <ClInclude Include="include/path.h" />
     <ClInclude Include="include/namespaces.h" />
+    <ClInclude Include="include/node.h" />
+    <ClInclude Include="include/path.h" />
+    <ClInclude Include="include/rayplus.h" />
     <ClInclude Include="include/soldier.h" />
     <ClInclude Include="include/tile.h" />
     <ClInclude Include="include/world.h" />
