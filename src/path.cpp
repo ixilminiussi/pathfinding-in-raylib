@@ -79,7 +79,7 @@ bool Path::aStarAlgorithm(const Vector2 &A, const Vector2 &B)
 {
     bool pathFound = false;
     float bestF = std::numeric_limits<float>::infinity();
-    Node *bestNode;
+    Node *bestNode = nullptr;
 
     Graph *graph = Graph::getInstance();
     World *world = World::getInstance();
